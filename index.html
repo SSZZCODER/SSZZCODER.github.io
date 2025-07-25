@@ -5,167 +5,106 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Analysis Using Blueberry</title>
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #e6ecff 0%, #f9fbff 100%);
-      padding: 3em 1.5em;
-      color: #222;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      background-color: #f0f4ff;
+      padding: 2em;
+      color: #333;
     }
 
     .title-page {
       text-align: center;
-      margin-bottom: 4em;
-      user-select: none;
+      margin-bottom: 3em;
     }
 
     h1 {
-      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-size: 3em;
       color: #4b0082;
-      font-weight: 800;
       margin: 0;
-      letter-spacing: 0.05em;
-      line-height: 1.1;
-      text-shadow: 0 2px 8px rgba(75, 0, 130, 0.3);
     }
 
     .subtitle {
-      font-size: clamp(1rem, 2vw, 1.25rem);
-      color: #666;
+      font-size: 1.2em;
       margin-top: 0.5em;
-      font-weight: 500;
-      font-style: italic;
     }
 
     .intro,
     .discussion {
-      max-width: 820px;
-      margin: 0 auto 3em auto;
-      background: #fff;
-      padding: 2.5em 3em;
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 2em;
       border-radius: 12px;
-      box-shadow: 0 12px 25px rgb(0 0 0 / 0.07);
-      transition: box-shadow 0.3s ease;
-    }
-
-    .intro:hover,
-    .discussion:hover {
-      box-shadow: 0 20px 45px rgb(0 0 0 / 0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .intro h2,
     .discussion h2 {
-      font-size: clamp(1.75rem, 3vw, 2rem);
-      font-weight: 900;
+      font-size: 1.8em;
+      font-weight: bold;
       color: #222;
-      margin-bottom: 1em;
-      border-bottom: 3px solid #4b0082;
-      padding-bottom: 0.3em;
-      letter-spacing: 0.04em;
+      margin-bottom: 0.5em;
     }
 
     ul {
       font-size: 1.1em;
-      line-height: 1.75;
-      padding-left: 2em;
-      color: #444;
-      margin-top: 0;
-      margin-bottom: 1.5em;
-    }
-
-    ul li {
-      margin-bottom: 0.75em;
-      position: relative;
-    }
-
-    ul li::marker {
-      color: #4b0082;
-      font-weight: 700;
+      line-height: 1.6;
+      padding-left: 1.5em;
     }
 
     .discussion img {
       max-width: 100%;
       height: auto;
-      margin-top: 1.5em;
+      margin: 1em 0;
       border-radius: 12px;
-      box-shadow: 0 6px 15px rgb(75 0 130 / 0.2);
-      transition: transform 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease-in-out;
       cursor: zoom-in;
     }
 
     .discussion img:hover {
-      transform: scale(1.05);
-      box-shadow: 0 12px 30px rgb(75 0 130 / 0.4);
-      cursor: zoom-in;
-      z-index: 10;
-      position: relative;
+      transform: scale(1.02);
     }
 
     .discussion p {
-      margin-top: 1.5em;
-      font-size: 1.125em;
-      color: #333;
-      letter-spacing: 0.01em;
-      font-weight: 400;
+      margin-top: 1em;
+      font-size: 1.1em;
+      line-height: 1.8;
     }
 
-    /* Flex container improvements */
-    .discussion > div[style*="display: flex"] {
+    .discussion ul {
+      margin-top: 1em;
+      font-size: 1.1em;
+      line-height: 1.8;
+    }
+
+    .discussion div {
       display: flex;
-      align-items: flex-start;
-      gap: 2em;
-      margin-bottom: 2em;
       flex-wrap: wrap;
+      align-items: center;
+      gap: 1em;
+      margin-bottom: 1em;
     }
 
-    .discussion > div[style*="display: flex"] img {
-      width: 48%;
-      border-radius: 12px;
-      box-shadow: 0 6px 15px rgb(75 0 130 / 0.18);
-      transition: transform 0.3s ease;
-      cursor: zoom-in;
+    .discussion div img {
+      flex: 1 1 45%;
+      min-width: 200px;
     }
 
-    .discussion > div[style*="display: flex"] img:hover {
-      transform: scale(1.07);
-      box-shadow: 0 14px 40px rgb(75 0 130 / 0.35);
-      z-index: 10;
-      position: relative;
+    .discussion div p {
+      flex: 1 1 45%;
+      margin: 0;
     }
 
-    .discussion > div[style*="display: flex"] > div {
-      flex: 1 1 40%;
-      font-size: 1.125em;
-      line-height: 1.55;
-      color: #444;
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 2em 1em;
-      }
-
-      .intro,
-      .discussion {
-        padding: 1.5em 1.5em;
-        margin-bottom: 2em;
-      }
-
-      .discussion > div[style*="display: flex"] {
+    @media (max-width: 768px) {
+      .discussion div {
         flex-direction: column;
       }
 
-      .discussion > div[style*="display: flex"] img,
-      .discussion > div[style*="display: flex"] > div {
-        width: 100% !important;
-        flex: none !important;
+      .discussion div img,
+      .discussion div p {
+        flex: 1 1 100%;
       }
     }
   </style>
@@ -187,7 +126,6 @@
     </ul>
   </div>
 
-
   <div class="discussion">
     <h2>Discussion</h2>
     <img src="images/BCI report.jpg" alt="Blueberry Data Graph" />
@@ -195,8 +133,7 @@
       Looking at this graph, we can infer many things. For example, when looking at the HbO levels throughout the 12 minutes, you can see several sharp peaks and dips. This represents changes in oxyhemoglobin concentration due to brain activity, which is most likely due to taking notes and processing information. Oddly, when the person first starts taking notes at 43 seconds, HbO drops almost immediately after. This is weird because, as we just stated, taking notes requires brain power, increasing brain activity as a result. If you zoom in more closely, you can clearly see that HbO drops at 48 seconds, which indicates a muscular response event. More interestingly, if you take a look at around 51 seconds, there is a sharp peak showing that the muscular response event actually caused an increase in HbO, showing that the person probably noticed something important in the reading.
     </p>
     <img src="images/image2.jpeg" alt="Additional Graph" />
-  
-    <ul style="margin-top: 1em; font-size: 1.1em; line-height: 1.6;">
+    <ul>
       <li>HbR mirrors HbO, showing an inverse relationship. When oxyhemoglobin increases, deoxyhemoglobin decreases, which is typical in brain activity.</li>
       <li>The flowActivity, heartRate, and flowIntensity data all reflect the mental engagement of the reader. For example, a spike in flowActivity can show active comprehension, while flat regions indicate passive reading.</li>
       <li>Since flowIntensity looks a lot like flowActivity, and it is a composite of both heartRate and flowActivity, we can assume that flowActivity dominates.</li>
@@ -205,35 +142,29 @@
       After a few days, we received another drive folder, this time having a screen recording and a CSV file of a person playing a pattern recognition game. 
     </p>
     <img src="images/hello.jpg" alt="Another graph" />
-     <p>
+    <p>
       After taking a quick glance at this graph, we immediately noticed that it was different from the reading and note-taking session one. HbO was really jagged and trended upwards instead of being relatively steady with a few peaks and dips. This makes sense because pattern games require you to think more. The first big peak occurred around 1 minute 9 seconds, which was when the game was explaining what the person was just doing and what the overall course is about. This could suggest that the person was reflecting on the patterns they had just created. Additionally, the course summary may have caused the person to try to connect what they had just done with the overall objectives of the course.
     </p>
-     <img src="images/1.jpeg" alt="Image 1" style="width: 100%; height: auto; display: block; margin-bottom: 1em;" />
+    <img src="images/1.jpeg" alt="Image 1" />
 
-    <div style="display: flex; align-items: center; gap: 1em; margin-bottom: 1em;">
-      <img src="images/2.jpeg" alt="Image 2" style="width: 50%; height: auto;" />
-      
-      <div style="flex: 1; font-size: 1.1em; line-height: 1.5;">
-        <p>
-          At 5 minutes 36 seconds, when the person is forced to make a purchase decision, both HbO and flowIntensity spike. This is likely due to the fact that the person was evaluating whether or not they should make the purchase, which triggered their neurons. Additionally, that might’ve stressed them out a little, explaining the cardiovascular response.
-        </p>
-      </div>
-    </div>
-  
-    <img src="images/3.jpeg" alt="Image 3" style="width: 100%; height: auto; display: block;" />
-    <img src="images/one.jpeg" alt="load" />
+    <div>
+      <img src="images/2.jpeg" alt="Image 2" />
       <p>
-        Surprisingly, HbO reached its highest when the person was at the level selection screen, which occurs at 9 minutes 36 seconds. We think this could’ve been due to two factors we previously discussed: reflection and decision-making. The person might’ve been asking themselves whether or not they should move on or give their brain a chance to take in everything that just happened. It could’ve also been due to anticipation; the person could’ve been expecting a harder level, so they were getting mentally prepared for it. We later found out that it was a muscular response artifact.
+        At 5 minutes 36 seconds, when the person is forced to make a purchase decision, both HbO and flowIntensity spike. This is likely due to the fact that the person was evaluating whether or not they should make the purchase, which triggered their neurons. Additionally, that might’ve stressed them out a little, explaining the cardiovascular response.
       </p>
+    </div>
+
+    <img src="images/3.jpeg" alt="Image 3" />
+    <img src="images/one.jpeg" alt="load" />
+    <p>
+      Surprisingly, HbO reached its highest when the person was at the level selection screen, which occurs at 9 minutes 36 seconds. We think this could’ve been due to two factors we previously discussed: reflection and decision-making. The person might’ve been asking themselves whether or not they should move on or give their brain a chance to take in everything that just happened. It could’ve also been due to anticipation; the person could’ve been expecting a harder level, so they were getting mentally prepared for it. We later found out that it was a muscular response artifact.
+    </p>
     <img src="images/two.jpeg" alt="loadd" />
     <img src="images/three.jpeg" alt="loaddd" />
     <p>
       Nonetheless, all of these responses could’ve simply occurred because the brain had to reorient itself to the change of scenery, the new page.
     </p>
-
-
   </div>
-  
 
 </body>
 </html>
