@@ -6,29 +6,63 @@
   <title>Data Analysis Using Blueberry</title>
   <style>
     body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f0f4ff;
+      padding: 2em;
+      color: #333;
     }
+
+    .title-page {
+      text-align: center;
+      margin-bottom: 3em;
+    }
+
     h1 {
       font-size: 3em;
       color: #4b0082;
       margin: 0;
     }
-    p {
+
+    .subtitle {
       font-size: 1.2em;
-      color: #333;
       margin-top: 0.5em;
+    }
+
+    .intro {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .intro h2 {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #222;
+    }
+
+    ul {
+      font-size: 1.1em;
+      line-height: 1.6;
+      padding-left: 1.5em;
     }
   </style>
 </head>
 <body>
-  <h1>Data Analysis Using Blueberry</h1>
-  <p>By Patrick Zhang and Samuel Zhang</p>
+
+  <div class="title-page">
+    <h1>Data Analysis Using Blueberry</h1>
+    <p class="subtitle">By Patrick Zhang and Samuel Zhang</p>
+  </div>
+
+  <div class="intro">
+    <h2>Introduction</h2>
+    <ul>
+      <li>Blueberry is a bio-sensing computer that is attached to an eyeglass, which collects biological signals to track physical and mental states.</li>
+      <li>We analyzed five key metrics from Blueberry: HbO (oxyhemoglobin), HbR (deoxyhemoglobin), flowActivity (a representation of changes in blood flow over a 10–20 second period), heartRate (beats per minute), and flowIntensity (a composite representation of blood flow changes and cardiovascular indicators such as heart rate).</li>
+      <li>The data came from a session where a person read <em>The History of the Future: Oculus, Facebook, and the Revolution That Swept Virtual Reality</em> by Blake J. Harris and took notes, with their notes, a CSV file, and a screen recording provided.</li>
+      <li>We used Google Colab, a software that allows us to run Python and work together, and a few libraries like pandas and Matplotlib to visualize the data.</li>
+    </ul>
+  </div>
+
 </body>
 </html>
