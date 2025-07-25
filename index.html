@@ -5,60 +5,168 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Analysis Using Blueberry</title>
   <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f4ff;
-      padding: 2em;
-      color: #333;
+      background: linear-gradient(135deg, #e6ecff 0%, #f9fbff 100%);
+      padding: 3em 1.5em;
+      color: #222;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .title-page {
       text-align: center;
-      margin-bottom: 3em;
+      margin-bottom: 4em;
+      user-select: none;
     }
 
     h1 {
-      font-size: 3em;
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
       color: #4b0082;
+      font-weight: 800;
       margin: 0;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+      text-shadow: 0 2px 8px rgba(75, 0, 130, 0.3);
     }
 
     .subtitle {
-      font-size: 1.2em;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: #666;
       margin-top: 0.5em;
+      font-weight: 500;
+      font-style: italic;
     }
 
     .intro,
     .discussion {
-      max-width: 800px;
-      margin: 0 auto;
+      max-width: 820px;
+      margin: 0 auto 3em auto;
+      background: #fff;
+      padding: 2.5em 3em;
+      border-radius: 12px;
+      box-shadow: 0 12px 25px rgb(0 0 0 / 0.07);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .intro:hover,
+    .discussion:hover {
+      box-shadow: 0 20px 45px rgb(0 0 0 / 0.12);
     }
 
     .intro h2,
     .discussion h2 {
-      font-size: 1.8em;
-      font-weight: bold;
+      font-size: clamp(1.75rem, 3vw, 2rem);
+      font-weight: 900;
       color: #222;
+      margin-bottom: 1em;
+      border-bottom: 3px solid #4b0082;
+      padding-bottom: 0.3em;
+      letter-spacing: 0.04em;
     }
 
     ul {
       font-size: 1.1em;
-      line-height: 1.6;
-      padding-left: 1.5em;
+      line-height: 1.75;
+      padding-left: 2em;
+      color: #444;
+      margin-top: 0;
+      margin-bottom: 1.5em;
+    }
+
+    ul li {
+      margin-bottom: 0.75em;
+      position: relative;
+    }
+
+    ul li::marker {
+      color: #4b0082;
+      font-weight: 700;
     }
 
     .discussion img {
       max-width: 100%;
       height: auto;
-      margin-top: 1em;
-      border-radius: 8px;
+      margin-top: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgb(75 0 130 / 0.2);
+      transition: transform 0.3s ease;
+      cursor: zoom-in;
+    }
+
+    .discussion img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 30px rgb(75 0 130 / 0.4);
+      cursor: zoom-in;
+      z-index: 10;
+      position: relative;
     }
 
     .discussion p {
-      margin-top: 1em;
-      font-size: 1.1em;
-      line-height: 1.6;
+      margin-top: 1.5em;
+      font-size: 1.125em;
+      color: #333;
+      letter-spacing: 0.01em;
+      font-weight: 400;
+    }
+
+    /* Flex container improvements */
+    .discussion > div[style*="display: flex"] {
+      display: flex;
+      align-items: flex-start;
+      gap: 2em;
+      margin-bottom: 2em;
+      flex-wrap: wrap;
+    }
+
+    .discussion > div[style*="display: flex"] img {
+      width: 48%;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgb(75 0 130 / 0.18);
+      transition: transform 0.3s ease;
+      cursor: zoom-in;
+    }
+
+    .discussion > div[style*="display: flex"] img:hover {
+      transform: scale(1.07);
+      box-shadow: 0 14px 40px rgb(75 0 130 / 0.35);
+      z-index: 10;
+      position: relative;
+    }
+
+    .discussion > div[style*="display: flex"] > div {
+      flex: 1 1 40%;
+      font-size: 1.125em;
+      line-height: 1.55;
+      color: #444;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 2em 1em;
+      }
+
+      .intro,
+      .discussion {
+        padding: 1.5em 1.5em;
+        margin-bottom: 2em;
+      }
+
+      .discussion > div[style*="display: flex"] {
+        flex-direction: column;
+      }
+
+      .discussion > div[style*="display: flex"] img,
+      .discussion > div[style*="display: flex"] > div {
+        width: 100% !important;
+        flex: none !important;
+      }
     }
   </style>
 </head>
