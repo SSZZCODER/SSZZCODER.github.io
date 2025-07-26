@@ -107,6 +107,44 @@
         flex: 1 1 100%;
       }
     }
+    .downloads {
+      max-width: 900px;
+      margin: 3em auto;
+      background: #e3ecff;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-left: 6px solid #4b0082;
+    }
+    
+    .downloads h2 {
+      color: #4b0082;
+      margin-bottom: 1em;
+    }
+    
+    .downloads ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .downloads li {
+      margin-bottom: 1em;
+    }
+    
+    .downloads a {
+      text-decoration: none;
+      background-color: #4b0082;
+      color: #fff;
+      padding: 0.6em 1.2em;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+      display: inline-block;
+    }
+    
+    .downloads a:hover {
+      background-color: #360061;
+    }
+
   </style>
 </head>
 <body>
@@ -166,12 +204,13 @@
     </p>
   </div>
   <div class="downloads">
-    <h2>Access the data</h2>
+    <h2>📥 Access the Data</h2>
     <ul>
       <li><a href="downloads/opticaldatafromreadingandnotetakingsession.csv" download>Download Reading & Note-taking Session Data</a></li>
       <li><a href="downloads/opticaldatafrompatterngamesession.csv" download>Download Pattern Game Session Data</a></li>
     </ul>
   </div>
+
 
 
 </body>
