@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Analysis Using Blueberry</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -116,21 +117,21 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       border-left: 6px solid #4b0082;
     }
-    
+
     .downloads h2 {
       color: #4b0082;
       margin-bottom: 1em;
     }
-    
+
     .downloads ul {
       list-style: none;
       padding-left: 0;
     }
-    
+
     .downloads li {
       margin-bottom: 1em;
     }
-    
+
     .downloads a {
       text-decoration: none;
       background-color: #4b0082;
@@ -140,11 +141,10 @@
       transition: background-color 0.3s ease;
       display: inline-block;
     }
-    
+
     .downloads a:hover {
       background-color: #360061;
     }
-
   </style>
 </head>
 <body>
@@ -166,7 +166,10 @@
 
   <div class="discussion">
     <h2>Discussion</h2>
-    <img src="images/BCI report.jpg" alt="Blueberry Data Graph" />
+
+    <!-- REPLACED STATIC IMAGE -->
+    <div id="hboPlot"></div>
+
     <p>
       Looking at this graph, we can infer many things. For example, when looking at the HbO levels throughout the 12 minutes, you can see several sharp peaks and dips. This represents changes in oxyhemoglobin concentration due to brain activity, which is most likely due to taking notes and processing information. Oddly, when the person first starts taking notes at 43 seconds, HbO drops almost immediately after. This is weird because, as we just stated, taking notes requires brain power, increasing brain activity as a result. If you zoom in more closely, you can clearly see that HbO drops at 48 seconds, which indicates a muscular response event. More interestingly, if you take a look at around 51 seconds, there is a sharp peak showing that the muscular response event actually caused an increase in HbO, showing that the person probably noticed something important in the reading.
     </p>
@@ -203,6 +206,7 @@
       Nonetheless, all of these responses could’ve simply occurred because the brain had to reorient itself to the change of scenery, the new page.
     </p>
   </div>
+
   <div class="downloads">
     <h2>📥 Access the Data</h2>
     <ul>
@@ -211,7 +215,30 @@
     </ul>
   </div>
 
+  <script>
+    const time = [0.65, 0.67, 0.69, 0.71, 0.73, 0.75, 0.77, 0.79, 0.81, 0.83, 0.85, 0.87, 0.89, 0.91, 0.93, 0.95, 0.97, 1.0];
+    const hbo = [-4, -3.5, -3.0, -2.5, -2.0, -3.9, -3.6, -3.2, -3.0, -3.0, -3.0, -3.0, -3.0, -1.1, -1.0, -1.2, -1.4, -1.5];
 
+    const trace = {
+      x: time,
+      y: hbo,
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'HbO (Smoothed)',
+      line: { color: 'indianred' },
+      marker: { size: 6 }
+    };
 
+    const layout = {
+      title: 'Zoomed-In HbO (Smoothed) from 40s to 1 Minute',
+      xaxis: { title: 'Time (Minutes)' },
+      yaxis: { title: 'HbO (Smoothed)' },
+      plot_bgcolor: '#f9f9ff',
+      paper_bgcolor: '#ffffff',
+      margin: { t: 50, l: 60, r: 30, b: 50 }
+    };
+
+    Plotly.newPlot('hboPlot', [trace], layout);
+  </script>
 </body>
 </html>
