@@ -1,4 +1,3 @@
-refer to this code later
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,6 +107,7 @@ refer to this code later
         flex: 1 1 100%;
       }
     }
+
     .downloads {
       max-width: 900px;
       margin: 3em auto;
@@ -117,21 +117,21 @@ refer to this code later
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       border-left: 6px solid #4b0082;
     }
-    
+
     .downloads h2 {
       color: #4b0082;
       margin-bottom: 1em;
     }
-    
+
     .downloads ul {
       list-style: none;
       padding-left: 0;
     }
-    
+
     .downloads li {
       margin-bottom: 1em;
     }
-    
+
     .downloads a {
       text-decoration: none;
       background-color: #4b0082;
@@ -141,11 +141,45 @@ refer to this code later
       transition: background-color 0.3s ease;
       display: inline-block;
     }
-    
+
     .downloads a:hover {
       background-color: #360061;
     }
 
+    /* Tooltip styling for image2.jpeg */
+    .tooltip-image {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip-image img {
+      display: block;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .tooltip-text {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background-color: rgba(255, 255, 255, 0.95);
+      color: #333;
+      border-radius: 8px;
+      padding: 1em;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+      width: 300px;
+      font-size: 0.95em;
+      transition: opacity 0.2s ease;
+    }
+
+    .tooltip-image:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -171,7 +205,19 @@ refer to this code later
     <p>
       Looking at this graph, we can infer many things. For example, when looking at the HbO levels throughout the 12 minutes, you can see several sharp peaks and dips. This represents changes in oxyhemoglobin concentration due to brain activity, which is most likely due to taking notes and processing information. Oddly, when the person first starts taking notes at 43 seconds, HbO drops almost immediately after. This is weird because, as we just stated, taking notes requires brain power, increasing brain activity as a result. If you zoom in more closely, you can clearly see that HbO drops at 48 seconds, which indicates a muscular response event. More interestingly, if you take a look at around 51 seconds, there is a sharp peak showing that the muscular response event actually caused an increase in HbO, showing that the person probably noticed something important in the reading.
     </p>
-    <img src="images/image2.jpeg" alt="Additional Graph" />
+
+    <!-- Tooltip-enhanced image -->
+    <div class="tooltip-image">
+      <img src="images/image2.jpeg" alt="Additional Graph" />
+      <div class="tooltip-text">
+        <ul>
+          <li>HbR mirrors HbO — an inverse pattern typical of brain activation.</li>
+          <li>Spikes in flowActivity may reflect bursts of comprehension.</li>
+          <li>FlowIntensity aligns closely with FlowActivity due to cardiovascular overlap.</li>
+        </ul>
+      </div>
+    </div>
+
     <ul>
       <li>HbR mirrors HbO, showing an inverse relationship. When oxyhemoglobin increases, deoxyhemoglobin decreases, which is typical in brain activity.</li>
       <li>The flowActivity, heartRate, and flowIntensity data all reflect the mental engagement of the reader. For example, a spike in flowActivity can show active comprehension, while flat regions indicate passive reading.</li>
@@ -204,6 +250,7 @@ refer to this code later
       Nonetheless, all of these responses could’ve simply occurred because the brain had to reorient itself to the change of scenery, the new page.
     </p>
   </div>
+
   <div class="downloads">
     <h2>📥 Access the Data</h2>
     <ul>
@@ -211,8 +258,6 @@ refer to this code later
       <li><a href="downloads/opticaldatafrompatterngamesession.csv" download>Download Pattern Game Session Data</a></li>
     </ul>
   </div>
-
-
 
 </body>
 </html>
