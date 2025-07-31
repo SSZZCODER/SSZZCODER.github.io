@@ -413,6 +413,78 @@
 
     <div class="tooltip-image">
       <img src="images/3.jpeg" alt="Image 6" />
+      <canvas id="chart" style="width:100%; max-width:800px; margin-top:2em;"></canvas>
+      <div style="margin-top:1em; text-align:center;">
+        <input id="slider" type="range" min="0" max="299" value="0" style="width:80%;">
+        <p>Time: <span id="timeVal">5.50</span> min | HbO: <span id="hboVal">0.0</span> | FlowIntensity: <span id="fiVal">0</span></p>
+      </div>
+      
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script>
+
+        const dataPoints = [{"time_minutes":5.5,"hbo":0.0,"flowIntensity":19},{"time_minutes":5.500662,"hbo":0.0,"flowIntensity":19},{"time_minutes":5.501325,"hbo":0.0,"flowIntensity":19},{"time_minutes":5.501987,"hbo":0.0,"flowIntensity":19},{"time_minutes":5.502649,"hbo":0.0,"flowIntensity":19},{"time_minutes":5.503311,"hbo":0.0,"flowIntensity":19},{"time_minutes":5.503974,"hbo":0.0,"flowIntensity":20},{"time_minutes":5.504636,"hbo":0.0,"flowIntensity":20},{"time_minutes":5.505298,"hbo":0.0,"flowIntensity":20},{"time_minutes":5.50596,"hbo":0.0,"flowIntensity":20},{"time_minutes":5.506623,"hbo":0.0,"flowIntensity":20},{"time_minutes":5.507285,"hbo":0.0,"flowIntensity":20},{"time_minutes":5.507947,"hbo":0.0,"flowIntensity":20},{"time_minutes":5.508609,"hbo":0.0,"flowIntensity":21},{"time_minutes":5.509272,"hbo":0.0,"flowIntensity":21},{"time_minutes":5.509934,"hbo":0.0,"flowIntensity":21},{"time_minutes":5.510596,"hbo":0.0,"flowIntensity":21},{"time_minutes":5.511258,"hbo":0.0,"flowIntensity":21},{"time_minutes":5.511921,"hbo":0.0,"flowIntensity":21},{"time_minutes":5.512583,"hbo":0.0,"flowIntensity":22},{"time_minutes":5.513245,"hbo":0.0,"flowIntensity":22},{"time_minutes":5.513907,"hbo":0.0,"flowIntensity":22},{"time_minutes":5.51457,"hbo":0.0,"flowIntensity":22},{"time_minutes":5.515232,"hbo":0.0,"flowIntensity":22},{"time_minutes":5.515894,"hbo":0.0,"flowIntensity":23},{"time_minutes":5.516556,"hbo":0.0,"flowIntensity":23},{"time_minutes":5.517219,"hbo":0.0,"flowIntensity":23},{"time_minutes":5.517881,"hbo":0.0,"flowIntensity":23},{"time_minutes":5.518543,"hbo":0.0,"flowIntensity":23},{"time_minutes":5.519205,"hbo":0.0,"flowIntensity":24},{"time_minutes":5.519868,"hbo":0.0,"flowIntensity":24},{"time_minutes":5.52053,"hbo":0.0,"flowIntensity":24},{"time_minutes":5.521192,"hbo":0.0,"flowIntensity":24},{"time_minutes":5.521854,"hbo":0.0,"flowIntensity":24},{"time_minutes":5.522517,"hbo":0.0,"flowIntensity":25},{"time_minutes":5.523179,"hbo":0.0,"flowIntensity":25},{"time_minutes":5.523841,"hbo":0.0,"flowIntensity":25},{"time_minutes":5.524503,"hbo":0.0,"flowIntensity":25},{"time_minutes":5.525166,"hbo":0.0,"flowIntensity":25},{"time_minutes":5.525828,"hbo":0.0,"flowIntensity":26},{"time_minutes":5.52649,"hbo":0.0,"flowIntensity":26},{"time_minutes":5.527152,"hbo":0.0,"flowIntensity":26},{"time_minutes":5.527815,"hbo":0.0,"flowIntensity":26},{"time_minutes":5.528477,"hbo":0.0,"flowIntensity":26},{"time_minutes":5.529139,"hbo":0.0,"flowIntensity":27},{"time_minutes":5.529801,"hbo":0.0,"flowIntensity":27},{"time_minutes":5.530464,"hbo":0.0,"flowIntensity":27},{"time_minutes":5.531126,"hbo":0.0,"flowIntensity":27},{"time_minutes":5.531788,"hbo":0.0,"flowIntensity":27},{"time_minutes":5.53245,"hbo":0.0,"flowIntensity":28},{"time_minutes":5.533113,"hbo":0.0,"flowIntensity":28},{"time_minutes":5.533775,"hbo":0.0,"flowIntensity":28},{"time_minutes":5.534437,"hbo":0.0,"flowIntensity":28},{"time_minutes":5.535099,"hbo":0.0,"flowIntensity":28},{"time_minutes":5.535762,"hbo":0.0,"flowIntensity":29},{"time_minutes":5.536424,"hbo":0.0,"flowIntensity":29},{"time_minutes":5.537086,"hbo":0.0,"flowIntensity":29},{"time_minutes":5.537748,"hbo":0.0,"flowIntensity":29},{"time_minutes":5.538411,"hbo":0.0,"flowIntensity":29},{"time_minutes":5.539073,"hbo":0.0,"flowIntensity":30},{"time_minutes":5.539735,"hbo":0.0,"flowIntensity":30},{"time_minutes":5.540397,"hbo":0.0,"flowIntensity":30},{"time_minutes":5.54106,"hbo":0.0,"flowIntensity":30},{"time_minutes":5.541722,"hbo":0.0,"flowIntensity":30},{"time_minutes":5.542384,"hbo":0.0,"flowIntensity":31},{"time_minutes":5.543046,"hbo":0.0,"flowIntensity":31},{"time_minutes":5.543709,"hbo":0.0,"flowIntensity":31},{"time_minutes":5.544371,"hbo":0.0,"flowIntensity":31},{"time_minutes":5.545033,"hbo":0.0,"flowIntensity":31},{"time_minutes":5.545695,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.546358,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.54702,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.547682,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.548344,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.549007,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.549669,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.550331,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.550993,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.551656,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.552318,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.55298,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.553642,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.554305,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.554967,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.555629,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.556291,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.556954,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.557616,"hbo":0.0,"flowIntensity":32},{"time_minutes":5.558278,"hbo":0.0,"flowIntensity":32}];  
+      
+        const ctx = document.getElementById('chart').getContext('2d');
+        const times = dataPoints.map(d => d.time_minutes);
+        const hboVals = dataPoints.map(d => d.hbo);
+        const fiVals = dataPoints.map(d => d.flowIntensity);
+      
+        const chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: times,
+            datasets: [
+              {
+                label: 'HbO',
+                data: hboVals,
+                borderColor: 'blue',
+                yAxisID: 'y',
+                tension: 0.3
+              },
+              {
+                label: 'Flow Intensity',
+                data: fiVals,
+                borderColor: 'green',
+                yAxisID: 'y1',
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            stacked: false,
+            plugins: { legend: { position: 'top' } },
+            scales: {
+              x: { title: { display: true, text: 'Time (min)' }},
+              y: {
+                type: 'linear',
+                position: 'left',
+                title: { display: true, text: 'HbO' }
+              },
+              y1: {
+                type: 'linear',
+                position: 'right',
+                title: { display: true, text: 'Flow Intensity' },
+                grid: { drawOnChartArea: false }
+              }
+            }
+          }
+        });
+      
+        const slider = document.getElementById('slider');
+        const timeVal = document.getElementById('timeVal');
+        const hboVal = document.getElementById('hboVal');
+        const fiVal = document.getElementById('fiVal');
+      
+        slider.addEventListener('input', () => {
+          const i = parseInt(slider.value);
+          const pt = dataPoints[i];
+          timeVal.textContent = pt.time_minutes.toFixed(2);
+          hboVal.textContent = pt.hbo.toExponential(2);
+          fiVal.textContent = pt.flowIntensity;
+        });
+      </script>
       <div class="tooltip-text">
         <ul>
            <p>
