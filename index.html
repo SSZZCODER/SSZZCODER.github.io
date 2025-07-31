@@ -179,71 +179,6 @@
       visibility: visible;
       opacity: 1;
     }
-
-
-      .timeline-container {
-    position: relative;
-    width: 100%;
-    max-width: 1000px;
-    margin: 2em auto;
-    height: 120px;
-  }
-  .timeline-line {
-    position: absolute;
-    top: 40px;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background-color: #333;
-  }
-  .tick {
-    position: absolute;
-    top: 32px;
-    width: 2px;
-    height: 16px;
-    background-color: #333;
-  }
-  .tick-label {
-    position: absolute;
-    top: 52px;
-    font-size: 12px;
-    transform: translateX(-50%);
-    color: #555;
-  }
-  .dot {
-    position: absolute;
-    top: 20px;
-    width: 14px;
-    height: 14px;
-    background-color: crimson;
-    border-radius: 50%;
-    cursor: pointer;
-    transform: translateX(-50%);
-  }
-  .tooltip {
-    position: absolute;
-    top: -140px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #222;
-    color: #fff;
-    padding: 8px;
-    font-size: 12px;
-    border-radius: 6px;
-    display: none;
-    text-align: center;
-    z-index: 10;
-    width: 140px;
-  }
-  .tooltip img {
-    width: 120px;
-    height: auto;
-    border-radius: 4px;
-    margin-top: 6px;
-  }
-  .dot:hover .tooltip {
-    display: block;
-  }
   </style>
 </head>
 <body>
@@ -266,31 +201,6 @@
   <div class="discussion">
     <h2>Discussion</h2>
     <img src="images/BCI report.jpg" alt="Blueberry Data Graph" />
-    <h2 style="text-align: center; margin-top: 3em; font-size: 1.8em; color: #4b0082;">Timeline of Key Events</h2>
-    <div class="timeline-container">
-      <div class="timeline-line"></div>
-    
-      <!-- Ticks and Labels -->
-      <div style="position: absolute; left: 0%;"><div class="tick"></div><div class="tick-label">0:00</div></div>
-      <div style="position: absolute; left: 8.33%;"><div class="tick"></div><div class="tick-label">1:00</div></div>
-      <div style="position: absolute; left: 16.66%;"><div class="tick"></div><div class="tick-label">2:00</div></div>
-      <div style="position: absolute; left: 24.99%;"><div class="tick"></div><div class="tick-label">3:00</div></div>
-      <div style="position: absolute; left: 33.32%;"><div class="tick"></div><div class="tick-label">4:00</div></div>
-      <div style="position: absolute; left: 41.65%;"><div class="tick"></div><div class="tick-label">5:00</div></div>
-      <div style="position: absolute; left: 49.98%;"><div class="tick"></div><div class="tick-label">6:00</div></div>
-      <div style="position: absolute; left: 58.31%;"><div class="tick"></div><div class="tick-label">7:00</div></div>
-      <div style="position: absolute; left: 66.64%;"><div class="tick"></div><div class="tick-label">8:00</div></div>
-      <div style="position: absolute; left: 74.97%;"><div class="tick"></div><div class="tick-label">9:00</div></div>
-      <div style="position: absolute; left: 83.3%;"><div class="tick"></div><div class="tick-label">10:00</div></div>
-      <div style="position: absolute; left: 91.63%;"><div class="tick"></div><div class="tick-label">11:00</div></div>
-      <div style="position: absolute; left: 100%;"><div class="tick"></div><div class="tick-label">12:00</div></div>
-      <div class="dot" style="left: 6.25%; top: 20px;">
-        <div class="tooltip">
-          0:45 – Event A<br/>
-          <img src="images/frame0-45.jpg" alt="Event A Image" />
-        </div>
-      </div>
-    </div>
     <p>
       Looking at this graph, we can infer many things. For example, when looking at the HbO levels throughout the 12 minutes, you can see several sharp peaks and dips. This represents changes in oxyhemoglobin concentration due to brain activity, which is most likely due to taking notes and processing information. Oddly, when the person first starts taking notes at 43 seconds, HbO drops almost immediately after. This is weird because, as we just stated, taking notes requires brain power, increasing brain activity as a result. If you zoom in more closely, you can clearly see that HbO drops at 48 seconds, which indicates a muscular response event. More interestingly, if you take a look at around 51 seconds, there is a sharp peak showing that the muscular response event actually caused an increase in HbO, showing that the person probably noticed something important in the reading.
     </p>
