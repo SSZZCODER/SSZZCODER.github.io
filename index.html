@@ -335,6 +335,52 @@
       After a few days, we received another drive folder, this time having a screen recording and a CSV file of a person playing a pattern recognition game. 
     </p>
     <img src="images/hello.jpg" alt="Image 3" />
+     <div class="timeline" id="timeline2"></div>
+
+    <script>
+      // === first timeline (0–12m) already lives above … ===
+  
+      // now build the second one from 0–14 minutes:
+      const timeline2 = document.getElementById('timeline2');
+      const totalTicks2 = 14 * 4;  // 4 ticks per minute (every 15s)
+      for (let i = 0; i <= totalTicks2; i++) {
+        const minuteValue = i / 4;
+        const pct = (minuteValue / 14) * 100;
+        const isMajor = (i % 4 === 0);
+        const tick = document.createElement('div');
+        tick.className = isMajor ? 'tick-major' : 'tick-minor';
+        tick.style.left = pct + '%';
+  
+        if (isMajor) {
+          const label = document.createElement('span');
+          label.textContent = Math.round(minuteValue);
+          tick.appendChild(label);
+        }
+        timeline2.appendChild(tick);
+      }
+  
+      // Helper for dots on the 14m timeline
+      function addDot2(timeInMin, imageUrl) {
+        const pct = (timeInMin / 14) * 100;
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.style.left = pct + '%';
+  
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        tooltip.appendChild(img);
+  
+        dot.appendChild(tooltip);
+        timeline2.appendChild(dot);
+      }
+  
+      // Example: place three markers
+      addDot2(2.3, 'images/imgA.jpg');
+      addDot2(7.5, 'images/imgB.jpg');
+      addDot2(13.2, 'images/imgC.jpg');
+    </script>
    
     <p>
       After taking a quick glance at this graph, we immediately noticed that it was different from the reading and note-taking session one. HbO was really jagged and trended upwards instead of being relatively steady with a few peaks and dips. This makes sense because pattern games require you to think more. The first big peak occurred around 1 minute 9 seconds, which was when the game was explaining what the person was just doing and what the overall course is about. This could suggest that the person was reflecting on the patterns they had just created. Additionally, the course summary may have caused the person to try to connect what they had just done with the overall objectives of the course.
