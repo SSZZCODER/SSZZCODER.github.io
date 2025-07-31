@@ -12,19 +12,23 @@
       padding: 2em;
       color: #333;
     }
+
     .title-page {
       text-align: center;
       margin-bottom: 3em;
     }
+
     h1 {
       font-size: 3em;
       color: #4b0082;
       margin: 0;
     }
+
     .subtitle {
       font-size: 1.2em;
       margin-top: 0.5em;
     }
+
     .intro,
     .discussion {
       max-width: 900px;
@@ -34,6 +38,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
+
     .intro h2,
     .discussion h2 {
       font-size: 1.8em;
@@ -41,11 +46,13 @@
       color: #222;
       margin-bottom: 0.5em;
     }
+
     ul {
       font-size: 1.1em;
       line-height: 1.6;
       padding-left: 1.5em;
     }
+
     .discussion img {
       max-width: 100%;
       height: auto;
@@ -55,19 +62,23 @@
       transition: transform 0.3s ease-in-out;
       cursor: zoom-in;
     }
+
     .discussion img:hover {
       transform: scale(1.02);
     }
+
     .discussion p {
       margin-top: 1em;
       font-size: 1.1em;
       line-height: 1.8;
     }
+
     .discussion ul {
       margin-top: 1em;
       font-size: 1.1em;
       line-height: 1.8;
     }
+
     .discussion div {
       display: flex;
       flex-wrap: wrap;
@@ -75,23 +86,28 @@
       gap: 1em;
       margin-bottom: 1em;
     }
+
     .discussion div img {
       flex: 1 1 45%;
       min-width: 200px;
     }
+
     .discussion div p {
       flex: 1 1 45%;
       margin: 0;
     }
+
     @media (max-width: 768px) {
       .discussion div {
         flex-direction: column;
       }
+
       .discussion div img,
       .discussion div p {
         flex: 1 1 100%;
       }
     }
+
     .downloads {
       max-width: 900px;
       margin: 3em auto;
@@ -101,17 +117,21 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       border-left: 6px solid #4b0082;
     }
+
     .downloads h2 {
       color: #4b0082;
       margin-bottom: 1em;
     }
+
     .downloads ul {
       list-style: none;
       padding-left: 0;
     }
+
     .downloads li {
       margin-bottom: 1em;
     }
+
     .downloads a {
       text-decoration: none;
       background-color: #4b0082;
@@ -121,19 +141,23 @@
       transition: background-color 0.3s ease;
       display: inline-block;
     }
+
     .downloads a:hover {
       background-color: #360061;
     }
+
     .tooltip-image {
       position: relative;
       display: inline-block;
     }
+
     .tooltip-image img {
       display: block;
       width: 100%;
       border-radius: 12px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
+
     .tooltip-text {
       visibility: hidden;
       opacity: 0;
@@ -150,6 +174,7 @@
       font-size: 0.95em;
       transition: opacity 0.2s ease;
     }
+
     .tooltip-image:hover .tooltip-text {
       visibility: visible;
       opacity: 1;
@@ -157,65 +182,88 @@
   </style>
 </head>
 <body>
+
   <div class="title-page">
     <h1>🫐👓 Data Analysis Using Blueberry 🧠📈</h1>
     <p class="subtitle">By Patrick Zhang and Samuel Zhang</p>
   </div>
 
+  <div class="intro">
+    <h2>Introduction</h2>
+    <ul>
+      <li>Blueberry is a bio-sensing computer that is attached to an eyeglass, which collects biological signals to track physical and mental states. </li>
+      <li>We analyzed five key metrics from Blueberry: HbO (oxyhemoglobin), HbR (deoxyhemoglobin), flowActivity (a representation of changes in blood flow over a 10–20 second period), heartRate (beats per minute), and flowIntensity (a composite representation of blood flow changes and cardiovascular indicators such as heart rate).</li>
+      <li>The data came from a session where a person read <em>The History of the Future: Oculus, Facebook, and the Revolution That Swept Virtual Reality</em> by Blake J. Harris and took notes, with their notes, a CSV file, and a screen recording provided.</li>
+      <li>We used Google Colab, a software that allows us to run Python and work together, and a few libraries like pandas and Matplotlib to visualize the data.</li>
+    </ul>
+  </div>
+
   <div class="discussion">
     <h2>Discussion</h2>
+    <img src="images/BCI report.jpg" alt="Blueberry Data Graph" />
+    <p>
+      Looking at this graph, we can infer many things. For example, when looking at the HbO levels throughout the 12 minutes, you can see several sharp peaks and dips. This represents changes in oxyhemoglobin concentration due to brain activity, which is most likely due to taking notes and processing information. Oddly, when the person first starts taking notes at 43 seconds, HbO drops almost immediately after. This is weird because, as we just stated, taking notes requires brain power, increasing brain activity as a result. If you zoom in more closely, you can clearly see that HbO drops at 48 seconds, which indicates a muscular response event. More interestingly, if you take a look at around 51 seconds, there is a sharp peak showing that the muscular response event actually caused an increase in HbO, showing that the person probably noticed something important in the reading.
+    </p>
 
     <div class="tooltip-image">
-      <img src="images/hello.jpg" alt="Another graph" />
+      <img src="images/image2.jpeg" alt="Additional Graph" />
       <div class="tooltip-text">
         <ul>
-          <li>Peak at 1:09 when the game explains its objective.</li>
-          <li>Reflection likely caused by course summary.</li>
+          <li>HbR mirrors HbO, an inverse pattern typical of brain activation.</li>
+          <li>Spikes in flowActivity may reflect bursts of comprehension.</li>
+          <li>FlowIntensity aligns closely with FlowActivity due to cardiovascular overlap.</li>
         </ul>
       </div>
     </div>
 
-    <div class="tooltip-image">
-      <img src="images/1.jpeg" alt="Image 1" />
-      <div class="tooltip-text">
-        <ul>
-          <li>Jagged HbO spike matches explanation stage.</li>
-          <li>Reader likely synthesizing information.</li>
-        </ul>
-      </div>
-    </div>
+    <ul>
+      <li>HbR mirrors HbO, showing an inverse relationship. When oxyhemoglobin increases, deoxyhemoglobin decreases, which is typical in brain activity.</li>
+      <li>The flowActivity, heartRate, and flowIntensity data all reflect the mental engagement of the reader. For example, a spike in flowActivity can show active comprehension, while flat regions indicate passive reading.</li>
+      <li>Since flowIntensity looks a lot like flowActivity, and it is a composite of both heartRate and flowActivity, we can assume that flowActivity dominates.</li>
+    </ul>
+    <p>
+      After a few days, we received another drive folder, this time having a screen recording and a CSV file of a person playing a pattern recognition game. 
+    </p>
+    <img src="images/hello.jpg" alt="Another graph" />
+    <p>
+      After taking a quick glance at this graph, we immediately noticed that it was different from the reading and note-taking session one. HbO was really jagged and trended upwards instead of being relatively steady with a few peaks and dips. This makes sense because pattern games require you to think more. The first big peak occurred around 1 minute 9 seconds, which was when the game was explaining what the person was just doing and what the overall course is about. This could suggest that the person was reflecting on the patterns they had just created. Additionally, the course summary may have caused the person to try to connect what they had just done with the overall objectives of the course.
+    </p>
+    <img src="images/1.jpeg" alt="Image 1" />
 
-    <div class="tooltip-image">
+    <div>
       <img src="images/2.jpeg" alt="Image 2" />
-      <div class="tooltip-text">
-        <ul>
-          <li>Spike at 5:36 from purchase decision.</li>
-          <li>Stress-induced cardiovascular response.</li>
-        </ul>
-      </div>
+      <p>
+        At 5 minutes 36 seconds, when the person is forced to make a purchase decision, both HbO and flowIntensity spike. This is likely due to the fact that the person was evaluating whether or not they should make the purchase, which triggered their neurons. Additionally, that might’ve stressed them out a little, explaining the cardiovascular response.
+      </p>
     </div>
 
-    <div class="tooltip-image">
-      <img src="images/3.jpeg" alt="Image 3" />
-      <div class="tooltip-text">
-        <ul>
-          <li>Pattern stabilizes after decision-making.</li>
-          <li>Possibly brain cooldown or adaptation.</li>
-        </ul>
-      </div>
+    <img src="images/3.jpeg" alt="Image 3" />
+    <img src="images/one.jpeg" alt="load" />
+    <p>
+      Surprisingly, HbO reached its highest when the person was at the level selection screen, which occurs at 9 minutes 36 seconds. We think this could’ve been due to two factors we previously discussed: reflection and decision-making. The person might’ve been asking themselves whether or not they should move on or give their brain a chance to take in everything that just happened. It could’ve also been due to anticipation; the person could’ve been expecting a harder level, so they were getting mentally prepared for it. We later found out that it was a muscular response artifact.
+    </p>
+    <img src="images/two.jpeg" alt="loading" />
+    <img src="images/three.jpeg" alt="loaded" />
+    <p>
+      Nonetheless, all of these responses could’ve simply occurred because the brain had to reorient itself to the change of scenery, the new page.
+    </p>
+    <p>
+      This graph is especially interesting because it shows fluctuations and growth over time. Let’s examine two of the biggest peaks. The first notable peak is in the first part of the session and spans from approximately 1:30 to 2:22. The second major peak comes later in the second part of the session, spanning from around 11:45 to 12:22. The first peak lasts longer, however, the second peak has a higher baseline. This could suggest that while the first peak represents a longer period of increased activity, the second peak represents a period of stronger and more intense increased activity. Before, after, and during both peaks the person was working to solve puzzles, but during the first peak there was a screen that prompted the person to create an account. The break from the game could’ve potentially relaxed the person, which serves as an explanation as to why the first peak’s baseline was lower.
+    </p>
+    <img src="images/hello.jpeg" alt="eeee" />
+    <div style="display: flex; align-items: center; gap: 2em; margin: 2em 0;">
+      <img src="images/eeeee.jpeg" alt="Level Up Graph" style="width: 40%; min-width: 200px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);" />
+      <p style="flex: 1; font-size: 1.1em; line-height: 1.8;">
+        Taking a closer look at the graph, we can see that the baseline started increasing at 8 minutes. Around that time, the person playing the game leveled up, meaning that the game got harder, causing the person to put in more effort.
+      </p>
     </div>
-
-    <div class="tooltip-image">
-      <img src="images/one.jpeg" alt="Image 4" />
-      <div class="tooltip-text">
-        <ul>
-          <li>HbO highest at 9:36 during level selection.</li>
-          <li>Anticipation or muscular response artifact.</li>
-        </ul>
-      </div>
-    </div>
+    <p style="font-style: italic; font-family: 'Georgia', serif; font-size: 1.1em;">
+      Note: We used ChatGPT to provide the rough structure of the code and also the conversion of the units (milliseconds to minutes with intervals in between).
+    </p>
 
   </div>
+
+  
 
   <div class="downloads">
     <h2>📥 Access the Data</h2>
@@ -224,5 +272,6 @@
       <li><a href="downloads/opticaldatafrompatterngamesession.csv" download>Download Pattern Game Session Data</a></li>
     </ul>
   </div>
+
 </body>
 </html>
