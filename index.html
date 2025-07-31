@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Data Analysis Using Blueberry</title>
   <style>
     body {
@@ -252,7 +251,6 @@
       opacity: 1;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -279,7 +277,8 @@
     <script>
         const timeline = document.getElementById('timeline');
 
-        const totalTicks = 12 * 4; 
+        // Create ticks every 15 seconds (0.25 min) from 0 to 12 minutes
+        const totalTicks = 12 * 4; // 4 ticks per minute
         for (let i = 0; i <= totalTicks; i++) {
         const minuteValue = i / 4;
         const pct = (minuteValue / 12) * 100;
@@ -298,6 +297,7 @@
         timeline.appendChild(tick);
         }
 
+        // Helper to place a dot at a given time (in minutes) with an image on hover
         function addDot(timeInMin, imageUrl) {
         const pct = (timeInMin / 12) * 100;
         const dot = document.createElement('div');
@@ -314,6 +314,7 @@
         timeline.appendChild(dot);
         }
 
+        // Example dots -- replace or add calls as needed:
         addDot(6.3,  'images/6-18.png');  // 6:18 → 6 + 18/60 = 6.3
         addDot(7.4,  'images/7-24.png');  // 7:24 → 7 + 24/60 = 7.4
         addDot(1.7167, 'images/1-43.png');// 1:43 → 1 + 43/60 ≈ 1.7167
@@ -340,7 +341,9 @@
      <div class="timeline" id="timeline2"></div>
 
     <script>
+      // === first timeline (0–12m) already lives above … ===
   
+      // now build the second one from 0–14 minutes:
       const timeline2 = document.getElementById('timeline2');
       const totalTicks2 = 14 * 4;  // 4 ticks per minute (every 15s)
       for (let i = 0; i <= totalTicks2; i++) {
@@ -359,6 +362,7 @@
         timeline2.appendChild(tick);
       }
   
+      // Helper for dots on the 14m timeline
       function addDot2(timeInMin, imageUrl) {
         const pct = (timeInMin / 14) * 100;
         const dot = document.createElement('div');
@@ -375,7 +379,9 @@
         timeline2.appendChild(dot);
       }
   
-    
+      // Example: place three markers
+      // Place these inside your <script> after defining addDot():
+      
       addDot2(8.8667, 'images/8-52.png');   // 8:52 → 8 + 52/60 ≈ 8.8667
       addDot2(4.9667, 'images/4-58.png');   // 4:58 → 4 + 58/60 ≈ 4.9667
       addDot2(1.0,    'images/1-00.png');   // 1:00 → 1.0
@@ -405,7 +411,7 @@
       </p>
     </div>
 
-<!--     <div class="tooltip-image">
+    <div class="tooltip-image">
       <img src="images/3.jpeg" alt="Image 6" />
       <div class="tooltip-text">
         <ul>
@@ -415,14 +421,7 @@
         </ul>
       </div>
     </div>
-    <img src="images/one.jpeg" alt="Image 7" /> -->
-
-    <div class="chart-container" style="max-width: 900px; margin: 2em auto;">
-      <canvas id="hboChart"></canvas>
-    </div>
-    <div class="chart-container" style="max-width: 900px; margin: 2em auto;">
-      <canvas id="flowChart"></canvas>
-    </div>
+    <img src="images/one.jpeg" alt="Image 7" />
     <p>
       Surprisingly, HbO reached one of its highest points when the person was at the level selection screen, which occurs at 9 minutes 36 seconds. We think this could’ve been due to two factors we previously discussed: reflection and decision-making. The person might’ve been asking themselves whether or not they should move on or give their brain a chance to take in everything that just happened. It could’ve also been due to anticipation; the person could’ve been expecting a harder level, so they were getting mentally prepared for it. We later found out that it was a muscular response artifact.
     </p>
@@ -460,7 +459,7 @@
     <p style="font-style: italic; font-family: 'Georgia', serif; font-size: 1.1em;">
       Note: We used ChatGPT to provide the rough structure of the code and also the conversion of the units (milliseconds to minutes with intervals in between).
     </p>
-  
+
   </div>
 
   
@@ -472,129 +471,6 @@
       <li><a href="downloads/opticaldatafrompatterngamesession.csv" download>Download Pattern Game Session Data</a></li>
     </ul>
   </div>
-  <script>
-  const time = [
-    5.500, 5.502, 5.503, 5.505, 5.507, 5.508, 5.510, 5.512, 5.513, 5.515,
-    5.517, 5.518, 5.520, 5.522, 5.523, 5.525, 5.527, 5.528, 5.530, 5.532,
-    5.533, 5.535, 5.537, 5.538, 5.540, 5.542, 5.543, 5.545, 5.547, 5.548,
-    5.550, 5.552, 5.553, 5.555, 5.557, 5.558, 5.560, 5.562, 5.563, 5.565,
-    5.567, 5.568, 5.570, 5.572, 5.573, 5.575, 5.577, 5.578, 5.580, 5.582,
-    5.583, 5.585, 5.587, 5.588, 5.590, 5.592, 5.593, 5.595, 5.597, 5.598,
-    5.600
-  ];
 
-  const hboData = [
-    -6.6948e-15, -6.6880e-15, -6.6823e-15, -6.6781e-15, -6.6750e-15,
-    -6.6726e-15, -6.6707e-15, -6.6690e-15, -6.6670e-15, -6.6646e-15,
-    -6.6612e-15, -6.6567e-15, -6.6512e-15, -6.6446e-15, -6.6370e-15,
-    -6.6286e-15, -6.6194e-15, -6.6096e-15, -6.5992e-15, -6.5883e-15,
-    -6.5770e-15, -6.5655e-15, -6.5537e-15, -6.5418e-15, -6.5299e-15,
-    -6.5180e-15, -6.5062e-15, -6.4947e-15, -6.4836e-15, -6.4731e-15,
-    -6.4633e-15, -6.4543e-15, -6.4463e-15, -6.4393e-15, -6.4335e-15,
-    -6.4289e-15, -6.4256e-15, -6.4237e-15, -6.4232e-15, -6.4242e-15,
-    -6.4267e-15, -6.4308e-15, -6.4364e-15, -6.4436e-15, -6.4523e-15,
-    -6.4626e-15, -6.4744e-15, -6.4877e-15, -6.5025e-15, -6.5186e-15,
-    -6.5361e-15, -6.5548e-15, -6.5746e-15, -6.5954e-15, -6.6172e-15,
-    -6.6397e-15, -6.6628e-15, -6.6865e-15, -6.7105e-15, -6.7348e-15,
-    -6.7592e-15
-  ];
-
-  const flowData = [
-    21.40, 21.44, 21.48, 21.52, 21.56, 21.60, 21.64, 21.68, 21.72, 21.76,
-    21.80, 21.84, 21.88, 21.92, 21.96, 22.00, 22.04, 22.08, 22.12, 22.16,
-    22.20, 22.24, 22.28, 22.32, 22.36, 22.40, 22.44, 22.48, 22.52, 22.56,
-    22.60, 22.64, 22.68, 22.72, 22.76, 22.80, 22.84, 22.88, 22.92, 22.96,
-    23.00, 23.04, 23.08, 23.12, 23.16, 23.20, 23.24, 23.28, 23.32, 23.36,
-    23.40, 23.44, 23.48, 23.52, 23.56, 23.60, 23.64, 23.68, 23.72, 23.76,
-    23.80
-  ];
-
-  const options = {
-    type: 'line',
-    data: {
-      labels: time,
-      datasets: [{
-        label: 'Smoothed HbO',
-        data: hboData,
-        borderColor: 'rgba(255, 99, 132, 1)',
-        backgroundColor: 'rgba(255, 99, 132, 0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `HbO: ${context.raw.toExponential(2)} at ${context.label.toFixed(3)} min`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Time (minutes)'
-          }
-        },
-        y: {
-          title: {
-            display: true,
-            text: 'HbO (μmol/L)'
-          }
-        }
-      }
-    }
-  };
-
-  const options2 = {
-    type: 'line',
-    data: {
-      labels: time,
-      datasets: [{
-        label: 'Smoothed Flow Intensity',
-        data: flowData,
-        borderColor: 'rgba(54, 162, 235, 1)',
-        backgroundColor: 'rgba(54, 162, 235, 0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `FlowIntensity: ${context.raw.toFixed(2)} at ${context.label.toFixed(3)} min`;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Time (minutes)'
-          }
-        },
-        y: {
-          title: {
-            display: true,
-            text: 'Flow Intensity'
-          }
-        }
-      }
-    }
-  };
-
-  new Chart(document.getElementById('hboChart'), options);
-  new Chart(document.getElementById('flowChart'), options2);
-</script>
 </body>
 </html>
