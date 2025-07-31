@@ -179,6 +179,77 @@
       visibility: visible;
       opacity: 1;
     }
+
+    /* Timeline Styles */
+    .timeline {
+      position: relative;
+      width: 100%;
+      height: 4px;
+      background: #ccc;
+      border-radius: 2px;
+      margin: 1em 0;
+    }
+
+    .tick-major,
+    .tick-minor {
+      position: absolute;
+      background: #666;
+      width: 2px;
+    }
+
+    .tick-major {
+      height: 12px;
+      top: -4px;
+    }
+
+    .tick-major span {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: #333;
+    }
+
+    .tick-minor {
+      height: 8px;
+      top: -2px;
+    }
+
+    .dot {
+      position: absolute;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      background: #4b0082;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+    }
+
+    .dot .tooltip {
+      position: absolute;
+      top: -160px;
+      left: 50%;
+      transform: translateX(-50%);
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .dot .tooltip img {
+      max-width: 200px;
+      max-height: 150px;
+      border: 2px solid #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .dot:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -201,6 +272,53 @@
   <div class="discussion">
     <h2>Discussion</h2>
     <img src="images/BCI report.jpg" alt="Image 1" />
+    <div class="timeline" id="timeline"></div>
+
+    <script>
+        const timeline = document.getElementById('timeline');
+
+        // Create ticks every 15 seconds (0.25 min) from 0 to 12 minutes
+        const totalTicks = 12 * 4; // 4 ticks per minute
+        for (let i = 0; i <= totalTicks; i++) {
+        const minuteValue = i / 4;
+        const pct = (minuteValue / 12) * 100;
+        const isMajor = (i % 4 === 0);
+
+        const tick = document.createElement('div');
+        tick.className = isMajor ? 'tick-major' : 'tick-minor';
+        tick.style.left = pct + '%';
+
+        if (isMajor) {
+            const label = document.createElement('span');
+            label.textContent = Math.round(minuteValue);
+            tick.appendChild(label);
+        }
+
+        timeline.appendChild(tick);
+        }
+
+        // Helper to place a dot at a given time (in minutes) with an image on hover
+        function addDot(timeInMin, imageUrl) {
+        const pct = (timeInMin / 12) * 100;
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.style.left = pct + '%';
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        tooltip.appendChild(img);
+
+        dot.appendChild(tooltip);
+        timeline.appendChild(dot);
+        }
+
+        // Example dots -- replace or add calls as needed:
+        addDot(1.5, 'images/img1.jpg');
+        addDot(4.75, 'images/img2.jpg');
+        addDot(9.2, 'images/img3.jpg');
+    </script>
     <p>
       Looking at this graph, we can infer many things. For example, when looking at the HbO levels throughout the 12 minutes, you can see several sharp peaks and dips. This represents changes in oxyhemoglobin concentration due to brain activity, which is most likely due to taking notes and processing information. Oddly, when the person first starts taking notes at 43 seconds, HbO drops almost immediately after. This is weird because, as we just stated, taking notes requires brain power, increasing brain activity as a result. If you zoom in more closely, you can clearly see that HbO drops at 48 seconds, which indicates a muscular response event. More interestingly, if you take a look at around 51 seconds, there is a sharp peak showing that the muscular response event actually caused an increase in HbO, showing that the person probably noticed something important in the reading.
     </p>
