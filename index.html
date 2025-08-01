@@ -328,6 +328,133 @@
 
     <img src="images/image2.jpeg" alt="Image 2" />
   
+     
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HbO & FlowIntensity Windows</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <style>
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      margin-bottom: 2em;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Existing charts -->
+  <div class="chart-container">
+    <canvas id="fnirsChartA"></canvas>
+  </div>
+ 
+
+  <!-- Previously added windows -->
+
+
+  
+
+  <!-- New: HbO from 0.00–14.00 min -->
+  
+
+  <script>
+    async function initChart(canvasId, csvPath, varName, tminLow, tminHigh, borderColor, bgColor) {
+      const resp = await fetch(csvPath);
+      const text = await resp.text();
+      const [hdr, ...lines] = text.trim().split('\n');
+      const cols   = hdr.split(',');
+      const tsIdx  = cols.indexOf('timestamp');
+      const varIdx = cols.indexOf(varName);
+
+      let rows = lines
+        .map(l => l.split(','))
+        .filter(c => c.length === cols.length)
+        .map(c => ({ ts: +c[tsIdx], val: +c[varIdx] }));
+
+      const minTs = Math.min(...rows.map(r => r.ts));
+      let data = rows
+        .map(r => ({ t: (r.ts - minTs) / 60000, v: r.val }))
+        .filter(d => d.t >= tminLow && d.t <= tminHigh);
+
+      const step = Math.ceil(data.length / 100);
+      data = data.filter((_, i) => i % step === 0);
+
+      const labels = data.map(d => d.t.toFixed(2));
+      const values = data.map(d => d.v * 1e14);
+
+      new Chart(
+        document.getElementById(canvasId).getContext('2d'),
+        {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: `${varName} (${tminLow.toFixed(2)}–${tminHigh.toFixed(2)} min)`,
+              data: values,
+              borderColor,
+              backgroundColor: bgColor,
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 3,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { onClick: null },
+              tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+              x: { title: { display: true, text: 'Time (minutes)' }, grid: { display: false } },
+              y: { title: { display: true, text: `${varName} (× 10⁻¹⁴)` }, ticks: { callback: v => v.toFixed(2) } }
+            },
+            interaction: { mode: 'index', intersect: false }
+          }
+        }
+      );
+    }
+
+    window.onload = () => {
+      initChart('fnirsChartA',
+        '2025-07-13_11_26_50_AM-optical-data.csv',
+        'hbo', 0.67, 1.00,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)'
+      );
+      initChart('fnirsChartB',
+        '2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 1.00, 1.50,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)'
+      );
+      initChart('chartHbo55_6',
+        '2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 5.50, 6.00,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)'
+      );
+      initChart('chartFlow55_6',
+        '2025-07-16_10_15_44_AM-optical-data.csv',
+        'flowIntensity', 5.50, 6.00,
+        'rgba(54, 162, 235, 1)', 'rgba(54, 162, 235, 0.2)'
+      );
+      initChart('chartHbo95_10',
+        '2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 9.50, 10.00,
+        'rgba(255, 159, 64, 1)', 'rgba(255, 159, 64, 0.2)'
+      );
+      // New call for the full 0–14 min HbO trace:
+      initChart('chartHbo0_14',
+        '2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 0.00, 14.00,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)'
+      );
+    };
+  </script>
+</body>
+</html>
 
     <ul>
       <li>HbR mirrors HbO, showing an inverse relationship. When oxyhemoglobin increases, deoxyhemoglobin decreases, which is typical in brain activity.</li>
@@ -405,6 +532,9 @@
       </div>
     </div>
     <div>
+       <div class="chart-container">
+    <canvas id="fnirsChartB"></canvas>
+  </div>
       <img src="images/2.jpeg" alt="Image 5" />
       <p>
         At 5 minutes 36 seconds, when the person is forced to make a purchase decision, both HbO and flowIntensity spike. This is likely due to the fact that the person was evaluating whether or not they should make the purchase, which triggered their neurons. Additionally, that might’ve stressed them out a little, explaining the cardiovascular response.
@@ -413,6 +543,9 @@
 
     <div class="tooltip-image">
       <img src="images/3.jpeg" alt="Image 6" />
+        <div class="chart-container">
+    <canvas id="chartHbo55_6"></canvas>
+  </div>
       <div class="tooltip-text">
         <ul>
            <p>
@@ -422,11 +555,17 @@
       </div>
     </div>
     <img src="images/one.jpeg" alt="Image 7" />
+      <div class="chart-container">
+    <canvas id="chartFlow55_6"></canvas>
+  </div>
     <p>
       Surprisingly, HbO reached one of its highest points when the person was at the level selection screen, which occurs at 9 minutes 36 seconds. We think this could’ve been due to two factors we previously discussed: reflection and decision-making. The person might’ve been asking themselves whether or not they should move on or give their brain a chance to take in everything that just happened. It could’ve also been due to anticipation; the person could’ve been expecting a harder level, so they were getting mentally prepared for it. We later found out that it was a muscular response artifact.
     </p>
  <div class="tooltip-image">
       <img src="images/two.jpeg" alt="Image 8" />
+      <div class="chart-container">
+    <canvas id="chartHbo95_10"></canvas>
+  </div>
       <div class="tooltip-text">
         <ul>
            <p>
@@ -443,6 +582,9 @@
     </p>
      <div class="tooltip-image">
       <img src="images/hello.jpeg" alt="Image 10" />
+      <div class="chart-container">
+    <canvas id="chartHbo0_14"></canvas>
+  </div>
       <div class="tooltip-text">
         <ul>
            <li> The first notable peak is in the first part of the session and spans from approximately 1:30 to 2:22.</li>
