@@ -329,7 +329,7 @@
     <img src="images/image2.jpeg" alt="Image 2" />
   
      
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -346,136 +346,163 @@
 </head>
 <body>
 
+  <!-- HbO 0.67–1.00 min -->
   <div class="chart-container">
     <canvas id="fnirsChartA"></canvas>
   </div>
- 
 
+  <!-- HbO 1.00–1.50 min -->
+  <div class="chart-container">
+    <canvas id="fnirsChartB"></canvas>
+  </div>
 
- <script>
-// Helper: now takes a scaleFactor argument and auto-sets y.min/y.max
-async function initChart(canvasId, csvPath, varName, tminLow, tminHigh, borderColor, bgColor, scaleFactor = 1) {
-  const resp = await fetch(csvPath);
-  const text = await resp.text();
-  const [hdr, ...lines] = text.trim().split('\n');
-  const cols   = hdr.split(',');
-  const tsIdx  = cols.indexOf('timestamp');
-  const varIdx = cols.indexOf(varName);
+  <!-- HbO 5.50–6.00 min -->
+  <div class="chart-container">
+    <canvas id="chartHbo55_6"></canvas>
+  </div>
 
-  // parse + window
-  let rows = lines.map(l => l.split(','))
-                  .filter(c => c.length === cols.length)
-                  .map(c => ({ ts: +c[tsIdx], v: +c[varIdx] }));
-  const minTs = Math.min(...rows.map(r => r.ts));
-  let data = rows
-    .map(r => ({ t: (r.ts - minTs) / 60000, v: r.v }))
-    .filter(d => d.t >= tminLow && d.t <= tminHigh);
+  <!-- flowIntensity 5.50–6.00 min -->
+  <div class="chart-container">
+    <canvas id="chartFlow55_6"></canvas>
+  </div>
 
-  // down-sample to ≤100 pts
-  const step = Math.ceil(data.length / 100);
-  data = data.filter((_,i) => i % step === 0);
+  <!-- HbO 9.50–10.00 min -->
+  <div class="chart-container">
+    <canvas id="chartHbo95_10"></canvas>
+  </div>
 
-  // build labels & scaled values
-  const labels = data.map(d => d.t.toFixed(2));
-  const values = data.map(d => d.v * scaleFactor);
+  <!-- HbO 0.00–14.00 min -->
+  <div class="chart-container">
+    <canvas id="chartHbo0_14"></canvas>
+  </div>
 
-  // compute dynamic y-bounds
-  const minY = Math.min(...values);
-  const maxY = Math.max(...values);
+  <script>
+    /**
+     * Helper to fetch & filter CSV, downsample, scale, and plot varName.
+     * scaleFactor defaults to 1 (no scaling); use 1e15 for HbO.
+     */
+    async function initChart(canvasId, csvPath, varName, tminLow, tminHigh, borderColor, bgColor, scaleFactor = 1) {
+      const resp = await fetch(csvPath);
+      const text = await resp.text();
+      const [hdr, ...lines] = text.trim().split('\n');
+      const cols   = hdr.split(',');
+      const tsIdx  = cols.indexOf('timestamp');
+      const varIdx = cols.indexOf(varName);
 
-  new Chart(
-    document.getElementById(canvasId).getContext('2d'),
-    {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: `${varName} (${tminLow.toFixed(2)}–${tminHigh.toFixed(2)} min)`,
-          data: values,
-          borderColor,
-          backgroundColor: bgColor,
-          borderWidth: 2,
-          tension: 0.3,
-          pointRadius: 3,
-          fill: true
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { onClick: null },
-          tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-          x: {
-            title: { display: true, text: 'Time (minutes)' },
-            grid: { display: false }
+      // parse rows
+      let rows = lines
+        .map(l => l.split(','))
+        .filter(c => c.length === cols.length)
+        .map(c => ({ ts: +c[tsIdx], v: +c[varIdx] }));
+
+      // compute minutes and filter window
+      const minTs = Math.min(...rows.map(r => r.ts));
+      let data = rows
+        .map(r => ({ t: (r.ts - minTs) / 60000, v: r.v }))
+        .filter(d => d.t >= tminLow && d.t <= tminHigh);
+
+      // downsample to ≤100 points
+      const step = Math.ceil(data.length / 100);
+      data = data.filter((_, i) => i % step === 0);
+
+      // build labels & values
+      const labels = data.map(d => d.t.toFixed(2));
+      const values = data.map(d => d.v * scaleFactor);
+
+      // compute y-axis bounds
+      const minY = Math.min(...values);
+      const maxY = Math.max(...values);
+
+      // dynamic axis title
+      const exp = scaleFactor === 1 ? '' : ` (×10^${-Math.log10(scaleFactor)})`;
+
+      new Chart(
+        document.getElementById(canvasId).getContext('2d'),
+        {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: `${varName}${exp}`,
+              data: values,
+              borderColor,
+              backgroundColor: bgColor,
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 3,
+              fill: true
+            }]
           },
-          y: {
-            min: minY,
-            max: maxY,
-            title: { display: true, text: `${varName}${scaleFactor===1?'':' (× 10⁻¹⁴)'}` },
-            ticks: { callback: v => Number(v).toFixed(2) }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { onClick: null },
+              tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+              x: {
+                title: { display: true, text: 'Time (minutes)' },
+                grid: { display: false }
+              },
+              y: {
+                min: minY,
+                max: maxY,
+                title: { display: true, text: varName + exp },
+                ticks: { callback: v => v.toFixed(2) }
+              }
+            },
+            interaction: { mode: 'index', intersect: false }
           }
-        },
-        interaction: { mode: 'index', intersect: false }
-      }
+        }
+      );
     }
-  );
-}
 
-window.onload = () => {
-  // HbO 0.67–1.00 (scaled 1e14)
-  initChart('fnirsChartA',
-    '2025-07-13_11_26_50_AM-optical-data.csv',
-    'hbo', 0.67, 1.00,
-    'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
-    1e14
-  );
+    window.onload = () => {
+      // HbO slices (scale by 1e15)
+      initChart('fnirsChartA',
+        'downloads/2025-07-13_11_26_50_AM-optical-data.csv',
+        'hbo', 0.67, 1.00,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+        1e15
+      );
+      initChart('fnirsChartB',
+        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 1.00, 1.50,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+        1e15
+      );
+      initChart('chartHbo55_6',
+        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 5.50, 6.00,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+        1e15
+      );
 
-  // HbO 1.00–1.50 (scaled 1e14)
-  initChart('fnirsChartB',
-    '2025-07-16_10_15_44_AM-optical-data.csv',
-    'hbo', 1.00, 1.50,
-    'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
-    1e14
-  );
+      // flowIntensity slice (no scaling)
+      initChart('chartFlow55_6',
+        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
+        'flowIntensity', 5.50, 6.00,
+        'rgba(54, 162, 235, 1)', 'rgba(54, 162, 235, 0.2)',
+        1
+      );
 
-  // HbO 5.50–6.00 (scaled 1e14)
-  initChart('chartHbo55_6',
-    '2025-07-16_10_15_44_AM-optical-data.csv',
-    'hbo', 5.50, 6.00,
-    'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
-    1e14
-  );
+      initChart('chartHbo95_10',
+        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 9.50, 10.00,
+        'rgba(255, 159, 64, 1)', 'rgba(255, 159, 64, 0.2)',
+        1e15
+      );
 
-  // flowIntensity 5.50–6.00 (no scaling)
-  initChart('chartFlow55_6',
-    '2025-07-16_10_15_44_AM-optical-data.csv',
-    'flowIntensity', 5.50, 6.00,
-    'rgba(54, 162, 235, 1)', 'rgba(54, 162, 235, 0.2)',
-    1    // <— scaleFactor = 1 for flowIntensity
-  );
-
-  // HbO 9.50–10.00 (scaled 1e14)
-  initChart('chartHbo95_10',
-    '2025-07-16_10_15_44_AM-optical-data.csv',
-    'hbo', 9.50, 10.00,
-    'rgba(255, 159, 64, 1)', 'rgba(255, 159, 64, 0.2)',
-    1e14
-  );
-
-  // Full HbO 0.00–14.00 (scaled 1e14)
-  initChart('chartHbo0_14',
-    '2025-07-16_10_15_44_AM-optical-data.csv',
-    'hbo', 0.00, 14.00,
-    'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
-    1e14
-  );
-};
-</script>
-
+      // Full-session HbO (0–14 min)
+      initChart('chartHbo0_14',
+        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 0.00, 14.00,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+        1e15
+      );
+    };
+  </script>
 </body>
 </html>
 
