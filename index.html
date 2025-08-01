@@ -341,23 +341,15 @@
   </style>
 </head>
 <body>
-  <!-- HbO 0.67–1.00 min -->
   <div class="chart-container"><canvas id="fnirsChartA"></canvas></div>
-  <!-- HbO 1.00–1.50 min -->
   <div class="chart-container"><canvas id="fnirsChartB"></canvas></div>
-  <!-- HbO 5.50–6.00 min -->
   <div class="chart-container"><canvas id="fnirsChartC"></canvas></div>
-  <!-- flowIntensity 5.50–6.00 min -->
   <div class="chart-container"><canvas id="fnirsChartD"></canvas></div>
-  <!-- HbO 9.50–10.00 min -->
   <div class="chart-container"><canvas id="fnirsChartE"></canvas></div>
-  <!-- HbO 0.00–14.00 min -->
-  <div class="chart-container"><canvas id="fnirsChartF"></canvas></div>
+
 
   <script>
-  /**
-   * Fetch CSV, apply 5s MA, filter window, then downsample to maxPoints.
-   */
+
   async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh, windowSec=5, maxPoints=100) {
     const resp = await fetch(csvPath);
     const txt  = await resp.text();
@@ -366,24 +358,20 @@
     const tsIdx  = cols.indexOf('timestamp');
     const valIdx = cols.indexOf(varName);
 
-    // parse all rows
     let rows = lines.map(l => l.split(','))
       .filter(c => c.length === cols.length)
       .map(c => ({ ts:+c[tsIdx], v:+c[valIdx] }));
 
-    // convert to minutes and filter
     const t0 = Math.min(...rows.map(r=>r.ts));
     let data = rows.map(r=>({ t:(r.ts-t0)/60000, v:r.v }))
                    .filter(d=>d.t>=tminLow && d.t<=tminHigh);
 
-    // estimate pts/sec
     const deltas = data.slice(1).map((d,i)=> (data[i+1].t-data[i].t)*60);
     const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
     const ptsPerSec = 1/medianDelta;
     const winPts = Math.max(1, Math.round(ptsPerSec*windowSec));
     const half   = Math.floor(winPts/2);
 
-    // centered moving average
     const raw = data.map(d=>d.v);
     const smooth = raw.map((_,i)=>{
       const start = Math.max(0,i-half),
@@ -392,10 +380,8 @@
       return slice.reduce((a,b)=>a+b,0)/slice.length;
     });
 
-    // labels array
     const labels = data.map(d=>d.t.toFixed(2));
 
-    // downsample to ≤ maxPoints
     const step2 = Math.ceil(smooth.length / maxPoints);
     const dsLabels = labels.filter((_,i)=> i % step2 === 0);
     const dsValues = smooth.filter((_,i)=> i % step2 === 0);
@@ -450,35 +436,21 @@
     const csvB = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
     const hboScale = 1e15, hboLabel = ' (×10⁻¹⁵)';
 
-    // A: HbO 0.67–1.00
     const hA = await fetchAndSmooth(csvA, 'hbo',   0.67, 1.00);
     drawChart('fnirsChartA', hA.labels, hA.values, 'HbO', hboScale, 'rgba(255,99,132,1)','rgba(255,99,132,0.2)', hboLabel);
 
-    // B: HbO 1.00–1.50
     const hB = await fetchAndSmooth(csvB, 'hbo',   1.00, 1.50);
     drawChart('fnirsChartB', hB.labels, hB.values, 'HbO', hboScale, 'rgba(255,99,132,1)','rgba(255,99,132,0.2)', hboLabel);
 
-    // C: HbO 5.50–6.00
     const hC = await fetchAndSmooth(csvB, 'hbo',   5.50, 6.00);
     drawChart('fnirsChartC', hC.labels, hC.values, 'HbO', hboScale, 'rgba(255,99,132,1)','rgba(255,99,132,0.2)', hboLabel);
 
-    // D: flowIntensity 5.50–6.00
     const fD = await fetchAndSmooth(csvB, 'flowIntensity', 5.50, 6.00);
     drawChart('fnirsChartD', fD.labels, fD.values, 'flowIntensity', 1, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', '');
 
-    // E: HbO 9.50–10.00
     const hE = await fetchAndSmooth(csvB, 'hbo',   9.50,10.00);
     drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(255,159,64,1)','rgba(255,159,64,0.2)', hboLabel);
 
-    // F: HbO full 0.00–14.00 (disable heavy down-sampling)
-    const hF = await fetchAndSmooth(
-      csvB,
-      'hbo',
-      0.00, 14.00,
-      /* windowSec= */ 5,
-      /* maxPoints= */ 1000
-    );
-    drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(255,99,132,1)','rgba(255,99,132,0.2)', hboLabel);
   };
   </script>
 </body>
@@ -609,9 +581,7 @@
     </p>
      <div class="tooltip-image">
       <img src="images/hello.jpeg" alt="Image 10" />
-      <div class="chart-container">
-    <canvas id="fnirsChartF"></canvas>
-  </div>
+
       <div class="tooltip-text">
         <ul>
            <li> The first notable peak is in the first part of the session and spans from approximately 1:30 to 2:22.</li>
