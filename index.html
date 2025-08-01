@@ -329,7 +329,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>All HbO & FlowIntensity Windows</title>
+  <title>All HbO & FlowIntensity Windows (Downsampled)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <style>
     .chart-container {
@@ -341,13 +341,16 @@
   </style>
 </head>
 <body>
-  <div class="chart-container">
-    <canvas id="fnirsChartA"></canvas>
-  </div>
-  
+  <div class="chart-container"><canvas id="fnirsChartA"></canvas></div>
+  <div class="chart-container"><canvas id="fnirsChartB"></canvas></div>
+  <div class="chart-container"><canvas id="fnirsChartC"></canvas></div>
+  <div class="chart-container"><canvas id="fnirsChartD"></canvas></div>
+  <div class="chart-container"><canvas id="fnirsChartE"></canvas></div>
+  <div class="chart-container"><canvas id="fnirsChartF"></canvas></div>
 
   <script>
-  async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh, windowSec=5) {
+
+  async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh, windowSec=5, maxPoints=100) {
     const resp = await fetch(csvPath);
     const txt  = await resp.text();
     const [hdr, ...lines] = txt.trim().split('\n');
@@ -359,9 +362,9 @@
       .filter(c => c.length === cols.length)
       .map(c => ({ ts:+c[tsIdx], v:+c[valIdx] }));
 
-    const t0 = Math.min(...rows.map(r => r.ts));
-    let data = rows.map(r => ({ t:(r.ts - t0)/60000, v:r.v }))
-                   .filter(d => d.t >= tminLow && d.t <= tminHigh);
+    const t0 = Math.min(...rows.map(r=>r.ts));
+    let data = rows.map(r=>({ t:(r.ts-t0)/60000, v:r.v }))
+                   .filter(d=>d.t>=tminLow && d.t<=tminHigh);
 
     const deltas = data.slice(1).map((d,i)=> (data[i+1].t-data[i].t)*60);
     const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
@@ -371,20 +374,25 @@
 
     const raw = data.map(d=>d.v);
     const smooth = raw.map((_,i)=>{
-      const start = Math.max(0,i-half), end = Math.min(raw.length-1,i+half);
+      const start = Math.max(0,i-half),
+            end   = Math.min(raw.length-1,i+half);
       const slice = raw.slice(start,end+1);
       return slice.reduce((a,b)=>a+b,0)/slice.length;
     });
 
-    return {
-      labels: data.map(d=>d.t.toFixed(2)),
-      values: smooth
-    };
+    const labels = data.map(d=>d.t.toFixed(2));
+
+    const step2 = Math.ceil(smooth.length / maxPoints);
+    const dsLabels = labels.filter((_,i)=> i % step2 === 0);
+    const dsValues = smooth.filter((_,i)=> i % step2 === 0);
+
+    return { labels: dsLabels, values: dsValues };
   }
 
   function drawChart(id, labels, values, varName, scaleFactor, borderColor, bgColor, exponentLabel='') {
     const scaled = values.map(v=>v*scaleFactor);
     const minY = Math.min(...scaled), maxY = Math.max(...scaled);
+
     new Chart(document.getElementById(id).getContext('2d'), {
       type: 'line',
       data: {
@@ -426,25 +434,25 @@
   window.onload = async () => {
     const csvA = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
     const csvB = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
-    const hboScale = 1e15, hboLabel=' (×10⁻¹⁵)';
+    const hboScale = 1e15, hboLabel = ' (×10⁻¹⁵)';
 
-    const hA = await fetchAndSmooth(csvA,'hbo',0.67,1.00);
-    drawChart('fnirsChartA', hA.labels, hA.values, 'HbO', hboScale, 'rgba(255,99,132,1)', 'rgba(255,99,132,0.2)', hboLabel);
+    const hA = await fetchAndSmooth(csvA, 'hbo',   0.67, 1.00);
+    drawChart('fnirsChartA', hA.labels, hA.values, 'HbO', hboScale, 'rgba(255,99,132,1)','rgba(255,99,132,0.2)', hboLabel);
 
-    const hB = await fetchAndSmooth(csvB,'hbo',1.00,1.50);
-    drawChart('fnirsChartB', hB.labels, hB.values, 'HbO', hboScale, 'rgba(255,99,132,1)', 'rgba(255,99,132,0.2)', hboLabel);
+    const hB = await fetchAndSmooth(csvB, 'hbo',   1.00, 1.50);
+    drawChart('fnirsChartB', hB.labels, hB.values, 'HbO', hboScale, 'rgba(255,99,132,1)','rgba(255,99,132,0.2)', hboLabel);
 
-    const hC = await fetchAndSmooth(csvB,'hbo',5.50,6.00);
-    drawChart('fnirsChartC', hC.labels, hC.values, 'HbO', hboScale, 'rgba(255,99,132,1)', 'rgba(255,99,132,0.2)', hboLabel);
+    const hC = await fetchAndSmooth(csvB, 'hbo',   5.50, 6.00);
+    drawChart('fnirsChartC', hC.labels, hC.values, 'HbO', hboScale, 'rgba(255,99,132,1)','rgba(255,99,132,0.2)', hboLabel);
 
-    const fD = await fetchAndSmooth(csvB,'flowIntensity',5.50,6.00);
-    drawChart('fnirsChartD', fD.labels, fD.values, 'flowIntensity', 1, 'rgba(54,162,235,1)', 'rgba(54,162,235,0.2)', '');
+    const fD = await fetchAndSmooth(csvB, 'flowIntensity', 5.50, 6.00);
+    drawChart('fnirsChartD', fD.labels, fD.values, 'flowIntensity', 1, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', '');
 
-    const hE = await fetchAndSmooth(csvB,'hbo',9.50,10.00);
-    drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(255,159,64,1)', 'rgba(255,159,64,0.2)', hboLabel);
+    const hE = await fetchAndSmooth(csvB, 'hbo',   9.50,10.00);
+    drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(255,159,64,1)','rgba(255,159,64,0.2)', hboLabel);
 
-    const hF = await fetchAndSmooth(csvB,'hbo',0.00,14.00);
-    drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(255,99,132,1)', 'rgba(255,99,132,0.2)', hboLabel);
+    const hF = await fetchAndSmooth(csvB, 'hbo',   0.00,14.00);
+    drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(255,99,132,1)','rgba(255,99,132,0.2)', hboLabel);
   };
   </script>
 </body>
