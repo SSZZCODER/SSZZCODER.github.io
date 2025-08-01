@@ -333,7 +333,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>HbO & FlowIntensity 5.50–6.00 min</title>
+  <title>HbO & FlowIntensity Windows</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <style>
     .chart-container {
@@ -346,15 +346,12 @@
 </head>
 <body>
 
-  <!-- HbO 5.50–6.00 min -->
+  <!-- HbO 0.67–1.00 min -->
   <div class="chart-container">
-    <canvas id="chartHbo55_6"></canvas>
+    <canvas id="fnirsChartA"></canvas>
   </div>
 
-  <!-- flowIntensity 5.50–6.00 min -->
-  <div class="chart-container">
-    <canvas id="chartFlow55_6"></canvas>
-  </div>
+
 
   <script>
     /**
@@ -392,7 +389,9 @@
       // compute y-axis bounds
       const minY = Math.min(...values);
       const maxY = Math.max(...values);
-      const exp  = scaleFactor === 1 ? '' : ` (×10^${-Math.log10(scaleFactor)})`;
+
+      // dynamic axis title
+      const exp = scaleFactor === 1 ? '' : ` (×10^${-Math.log10(scaleFactor)})`;
 
       new Chart(
         document.getElementById(canvasId).getContext('2d'),
@@ -437,9 +436,20 @@
     }
 
     window.onload = () => {
-      // HbO slice (scale by 1e15 to match Python’s 1e-15 exponent)
-      initChart(
-        'chartHbo55_6',
+      // HbO slices (scale by 1e15)
+      initChart('fnirsChartA',
+        'downloads/2025-07-13_11_26_50_AM-optical-data.csv',
+        'hbo', 0.67, 1.00,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+        1e15
+      );
+      initChart('fnirsChartB',
+        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 1.00, 1.50,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+        1e15
+      );
+      initChart('chartHbo55_6',
         'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
         'hbo', 5.50, 6.00,
         'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
@@ -447,12 +457,26 @@
       );
 
       // flowIntensity slice (no scaling)
-      initChart(
-        'chartFlow55_6',
+      initChart('chartFlow55_6',
         'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
         'flowIntensity', 5.50, 6.00,
         'rgba(54, 162, 235, 1)', 'rgba(54, 162, 235, 0.2)',
         1
+      );
+
+      initChart('chartHbo95_10',
+        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 9.50, 10.00,
+        'rgba(255, 159, 64, 1)', 'rgba(255, 159, 64, 0.2)',
+        1e15
+      );
+
+      // Full-session HbO (0–14 min)
+      initChart('chartHbo0_14',
+        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
+        'hbo', 0.00, 14.00,
+        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+        1e15
       );
     };
   </script>
