@@ -180,7 +180,6 @@
       opacity: 1;
     }
 
-    /* Timeline Styles */
     .timeline {
       position: relative;
       width: 100%;
@@ -277,8 +276,7 @@
     <script>
         const timeline = document.getElementById('timeline');
 
-        // Create ticks every 15 seconds (0.25 min) from 0 to 12 minutes
-        const totalTicks = 12 * 4; // 4 ticks per minute
+        const totalTicks = 12 * 4; 
         for (let i = 0; i <= totalTicks; i++) {
         const minuteValue = i / 4;
         const pct = (minuteValue / 12) * 100;
@@ -297,7 +295,6 @@
         timeline.appendChild(tick);
         }
 
-        // Helper to place a dot at a given time (in minutes) with an image on hover
         function addDot(timeInMin, imageUrl) {
         const pct = (timeInMin / 12) * 100;
         const dot = document.createElement('div');
@@ -314,7 +311,6 @@
         timeline.appendChild(dot);
         }
 
-        // Example dots -- replace or add calls as needed:
         addDot(6.3,  'images/6-18.png');  // 6:18 → 6 + 18/60 = 6.3
         addDot(7.4,  'images/7-24.png');  // 7:24 → 7 + 24/60 = 7.4
         addDot(1.7167, 'images/1-43.png');// 1:43 → 1 + 43/60 ≈ 1.7167
@@ -345,14 +341,12 @@
   </style>
 </head>
 <body>
-  <!-- HbO 0.67–1.00 min -->
   <div class="chart-container">
     <canvas id="fnirsChartA"></canvas>
   </div>
   
 
   <script>
-  // Fetch + smooth with centered MA of windowSec
   async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh, windowSec=5) {
     const resp = await fetch(csvPath);
     const txt  = await resp.text();
@@ -369,7 +363,6 @@
     let data = rows.map(r => ({ t:(r.ts - t0)/60000, v:r.v }))
                    .filter(d => d.t >= tminLow && d.t <= tminHigh);
 
-    // estimate pts/sec
     const deltas = data.slice(1).map((d,i)=> (data[i+1].t-data[i].t)*60);
     const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
     const ptsPerSec = 1/medianDelta;
@@ -435,27 +428,21 @@
     const csvB = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
     const hboScale = 1e15, hboLabel=' (×10⁻¹⁵)';
 
-    // A: HbO 0.67–1.00
     const hA = await fetchAndSmooth(csvA,'hbo',0.67,1.00);
     drawChart('fnirsChartA', hA.labels, hA.values, 'HbO', hboScale, 'rgba(255,99,132,1)', 'rgba(255,99,132,0.2)', hboLabel);
 
-    // B: HbO 1.00–1.50
     const hB = await fetchAndSmooth(csvB,'hbo',1.00,1.50);
     drawChart('fnirsChartB', hB.labels, hB.values, 'HbO', hboScale, 'rgba(255,99,132,1)', 'rgba(255,99,132,0.2)', hboLabel);
 
-    // C: HbO 5.50–6.00
     const hC = await fetchAndSmooth(csvB,'hbo',5.50,6.00);
     drawChart('fnirsChartC', hC.labels, hC.values, 'HbO', hboScale, 'rgba(255,99,132,1)', 'rgba(255,99,132,0.2)', hboLabel);
 
-    // D: flowIntensity 5.50–6.00 (no scaling)
     const fD = await fetchAndSmooth(csvB,'flowIntensity',5.50,6.00);
     drawChart('fnirsChartD', fD.labels, fD.values, 'flowIntensity', 1, 'rgba(54,162,235,1)', 'rgba(54,162,235,0.2)', '');
 
-    // E: HbO 9.50–10.00
     const hE = await fetchAndSmooth(csvB,'hbo',9.50,10.00);
     drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(255,159,64,1)', 'rgba(255,159,64,0.2)', hboLabel);
 
-    // F: HbO full 0.00–14.00
     const hF = await fetchAndSmooth(csvB,'hbo',0.00,14.00);
     drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(255,99,132,1)', 'rgba(255,99,132,0.2)', hboLabel);
   };
@@ -477,11 +464,9 @@
      <div class="timeline" id="timeline2"></div>
 
     <script>
-      // === first timeline (0–12m) already lives above … ===
-  
-      // now build the second one from 0–14 minutes:
+   
       const timeline2 = document.getElementById('timeline2');
-      const totalTicks2 = 14 * 4;  // 4 ticks per minute (every 15s)
+      const totalTicks2 = 14 * 4;  
       for (let i = 0; i <= totalTicks2; i++) {
         const minuteValue = i / 4;
         const pct = (minuteValue / 14) * 100;
@@ -498,7 +483,6 @@
         timeline2.appendChild(tick);
       }
   
-      // Helper for dots on the 14m timeline
       function addDot2(timeInMin, imageUrl) {
         const pct = (timeInMin / 14) * 100;
         const dot = document.createElement('div');
@@ -515,8 +499,7 @@
         timeline2.appendChild(dot);
       }
   
-      // Example: place three markers
-      // Place these inside your <script> after defining addDot():
+   
       
       addDot2(8.8667, 'images/8-52.png');   // 8:52 → 8 + 52/60 ≈ 8.8667
       addDot2(4.9667, 'images/4-58.png');   // 4:58 → 4 + 58/60 ≈ 4.9667
@@ -616,7 +599,7 @@
   
 
   <div class="downloads">
-    <h2>📥 Access the Data</h2>
+    <h2>Access the Data</h2>
     <ul>
       <li><a href="downloads/opticaldatafromreadingandnotetakingsession.csv" download>Download Reading & Note-taking Session Data</a></li>
       <li><a href="downloads/opticaldatafrompatterngamesession.csv" download>Download Pattern Game Session Data</a></li>
