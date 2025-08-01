@@ -352,99 +352,130 @@
  
 
 
-  <script>
-    async function initChart(canvasId, csvPath, varName, tminLow, tminHigh, borderColor, bgColor) {
-      const resp = await fetch(csvPath);
-      const text = await resp.text();
-      const [hdr, ...lines] = text.trim().split('\n');
-      const cols   = hdr.split(',');
-      const tsIdx  = cols.indexOf('timestamp');
-      const varIdx = cols.indexOf(varName);
+ <script>
+// Helper: now takes a scaleFactor argument and auto-sets y.min/y.max
+async function initChart(canvasId, csvPath, varName, tminLow, tminHigh, borderColor, bgColor, scaleFactor = 1) {
+  const resp = await fetch(csvPath);
+  const text = await resp.text();
+  const [hdr, ...lines] = text.trim().split('\n');
+  const cols   = hdr.split(',');
+  const tsIdx  = cols.indexOf('timestamp');
+  const varIdx = cols.indexOf(varName);
 
-      let rows = lines
-        .map(l => l.split(','))
-        .filter(c => c.length === cols.length)
-        .map(c => ({ ts: +c[tsIdx], val: +c[varIdx] }));
+  // parse + window
+  let rows = lines.map(l => l.split(','))
+                  .filter(c => c.length === cols.length)
+                  .map(c => ({ ts: +c[tsIdx], v: +c[varIdx] }));
+  const minTs = Math.min(...rows.map(r => r.ts));
+  let data = rows
+    .map(r => ({ t: (r.ts - minTs) / 60000, v: r.v }))
+    .filter(d => d.t >= tminLow && d.t <= tminHigh);
 
-      const minTs = Math.min(...rows.map(r => r.ts));
-      let data = rows
-        .map(r => ({ t: (r.ts - minTs) / 60000, v: r.val }))
-        .filter(d => d.t >= tminLow && d.t <= tminHigh);
+  // down-sample to ≤100 pts
+  const step = Math.ceil(data.length / 100);
+  data = data.filter((_,i) => i % step === 0);
 
-      const step = Math.ceil(data.length / 100);
-      data = data.filter((_, i) => i % step === 0);
+  // build labels & scaled values
+  const labels = data.map(d => d.t.toFixed(2));
+  const values = data.map(d => d.v * scaleFactor);
 
-      const labels = data.map(d => d.t.toFixed(2));
-      const values = data.map(d => d.v * 1e14);
+  // compute dynamic y-bounds
+  const minY = Math.min(...values);
+  const maxY = Math.max(...values);
 
-      new Chart(
-        document.getElementById(canvasId).getContext('2d'),
-        {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [{
-              label: `${varName} (${tminLow.toFixed(2)}–${tminHigh.toFixed(2)} min)`,
-              data: values,
-              borderColor,
-              backgroundColor: bgColor,
-              borderWidth: 2,
-              tension: 0.3,
-              pointRadius: 3,
-              fill: true
-            }]
+  new Chart(
+    document.getElementById(canvasId).getContext('2d'),
+    {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: `${varName} (${tminLow.toFixed(2)}–${tminHigh.toFixed(2)} min)`,
+          data: values,
+          borderColor,
+          backgroundColor: bgColor,
+          borderWidth: 2,
+          tension: 0.3,
+          pointRadius: 3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { onClick: null },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Time (minutes)' },
+            grid: { display: false }
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { onClick: null },
-              tooltip: { mode: 'index', intersect: false }
-            },
-            scales: {
-              x: { title: { display: true, text: 'Time (minutes)' }, grid: { display: false } },
-              y: { title: { display: true, text: `${varName} (× 10⁻¹⁴)` }, ticks: { callback: v => v.toFixed(2) } }
-            },
-            interaction: { mode: 'index', intersect: false }
+          y: {
+            min: minY,
+            max: maxY,
+            title: { display: true, text: `${varName}${scaleFactor===1?'':' (× 10⁻¹⁴)'}` },
+            ticks: { callback: v => Number(v).toFixed(2) }
           }
-        }
-      );
+        },
+        interaction: { mode: 'index', intersect: false }
+      }
     }
+  );
+}
 
-    window.onload = () => {
-      initChart('fnirsChartA',
-        'downloads/2025-07-13_11_26_50_AM-optical-data.csv',
-        'hbo', 0.67, 1.00,
-        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)'
-      );
-      initChart('fnirsChartB',
-        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
-        'hbo', 1.00, 1.50,
-        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)'
-      );
-      initChart('chartHbo55_6',
-        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
-        'hbo', 5.50, 6.00,
-        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)'
-      );
-      initChart('chartFlow55_6',
-        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
-        'flowIntensity', 5.50, 6.00,
-        'rgba(54, 162, 235, 1)', 'rgba(54, 162, 235, 0.2)'
-      );
-      initChart('chartHbo95_10',
-        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
-        'hbo', 9.50, 10.00,
-        'rgba(255, 159, 64, 1)', 'rgba(255, 159, 64, 0.2)'
-      );
-      // New call for the full 0–14 min HbO trace:
-      initChart('chartHbo0_14',
-        'downloads/2025-07-16_10_15_44_AM-optical-data.csv',
-        'hbo', 0.00, 14.00,
-        'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)'
-      );
-    };
-  </script>
+window.onload = () => {
+  // HbO 0.67–1.00 (scaled 1e14)
+  initChart('fnirsChartA',
+    '2025-07-13_11_26_50_AM-optical-data.csv',
+    'hbo', 0.67, 1.00,
+    'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+    1e14
+  );
+
+  // HbO 1.00–1.50 (scaled 1e14)
+  initChart('fnirsChartB',
+    '2025-07-16_10_15_44_AM-optical-data.csv',
+    'hbo', 1.00, 1.50,
+    'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+    1e14
+  );
+
+  // HbO 5.50–6.00 (scaled 1e14)
+  initChart('chartHbo55_6',
+    '2025-07-16_10_15_44_AM-optical-data.csv',
+    'hbo', 5.50, 6.00,
+    'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+    1e14
+  );
+
+  // flowIntensity 5.50–6.00 (no scaling)
+  initChart('chartFlow55_6',
+    '2025-07-16_10_15_44_AM-optical-data.csv',
+    'flowIntensity', 5.50, 6.00,
+    'rgba(54, 162, 235, 1)', 'rgba(54, 162, 235, 0.2)',
+    1    // <— scaleFactor = 1 for flowIntensity
+  );
+
+  // HbO 9.50–10.00 (scaled 1e14)
+  initChart('chartHbo95_10',
+    '2025-07-16_10_15_44_AM-optical-data.csv',
+    'hbo', 9.50, 10.00,
+    'rgba(255, 159, 64, 1)', 'rgba(255, 159, 64, 0.2)',
+    1e14
+  );
+
+  // Full HbO 0.00–14.00 (scaled 1e14)
+  initChart('chartHbo0_14',
+    '2025-07-16_10_15_44_AM-optical-data.csv',
+    'hbo', 0.00, 14.00,
+    'rgba(255, 99, 132, 1)', 'rgba(255, 99, 132, 0.2)',
+    1e14
+  );
+};
+</script>
+
 </body>
 </html>
 
