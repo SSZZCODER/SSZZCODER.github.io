@@ -531,6 +531,10 @@
     const hE = await fetchAndSmooth(csvB, 'hbo',   9.50,10.00);
     drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
 
+    const hF = await fetchAndSmooth(csvB, 'hbo');
+    drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
+    
+
   };
   </script>
 </body>
@@ -632,16 +636,9 @@
     <p>
       The graph below is especially interesting because it shows fluctuations and growth over time. Let’s examine two of the biggest peaks. The first notable peak is in the first part of the session and spans from approximately 1:30 to 2:22. The second major peak comes later in the second part of the session, spanning from around 11:45 to 12:22. The first peak lasts longer, however, the second peak has a higher baseline. This could suggest that while the first peak represents a longer period of increased activity, the second peak represents a period of stronger and more intense increased activity. Before, after, and during both peaks the person was working to solve puzzles, but during the first peak there was a screen that prompted the person to create an account. The break from the game could’ve potentially relaxed the person, which serves as an explanation as to why the first peak’s baseline was lower.
     </p>
-     <div class="tooltip-image">
-      <img src="images/hello.jpeg" alt="Image 10" />
-
-      <div class="tooltip-text">
-        <ul>
-           <li> The first notable peak is in the first part of the session and spans from approximately 1:30 to 2:22.</li>
-           <li>The second major peak comes later in the second part of the session, spanning from around 11:45 to 12:22.</li>
-        </ul>
-      </div>
-    </div>    
+    <div class="chart-container">
+    <canvas id="fnirsChartF"></canvas>
+  </div>
     <div style="display: flex; align-items: center; gap: 2em; margin: 2em 0;">
       <img src="images/eeeee.jpeg" alt="Image 11" style="width: 40%; min-width: 200px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);" />
       <p style="flex: 1; font-size: 1.1em; line-height: 1.8;">
