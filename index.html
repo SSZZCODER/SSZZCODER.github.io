@@ -431,43 +431,44 @@
   <script>
 
   async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh, windowSec=5, maxPoints=100) {
-    const resp = await fetch(csvPath);
-    const txt  = await resp.text();
-    const [hdr, ...lines] = txt.trim().split('\n');
-    const cols   = hdr.split(',');
-    const tsIdx  = cols.indexOf('timestamp');
-    const valIdx = cols.indexOf(varName);
+  const resp = await fetch(csvPath);
+  const txt  = await resp.text();
+  const [hdr, ...lines] = txt.trim().split('\n');
+  const cols   = hdr.split(',');
+  const tsIdx  = cols.indexOf('timestamp');
+  const valIdx = cols.indexOf(varName);
 
-    let rows = lines.map(l => l.split(','))
-      .filter(c => c.length === cols.length)
-      .map(c => ({ ts:+c[tsIdx], v:+c[valIdx] }));
+  let rows = lines.map(l => l.split(','))
+    .filter(c => c.length === cols.length)
+    .map(c => ({ ts:+c[tsIdx], v:+c[valIdx] }));
 
-    const t0 = Math.min(...rows.map(r=>r.ts));
-    let data = rows.map(r=>({ t:(r.ts-t0)/60000, v:r.v }))
-                   .filter(d=>d.t>=tminLow && d.t<=tminHigh);
+  const t0 = Math.min(...rows.map(r=>r.ts));
+  let data = rows.map(r => ({ t:(r.ts - t0)/60000, v:r.v }))
+                 .filter(d => d.t >= tminLow && d.t <= tminHigh)
+                 .filter(d => d.t > 0.5); // remove first 30 seconds
 
-    const deltas = data.slice(1).map((d,i)=> (data[i+1].t-data[i].t)*60);
-    const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
-    const ptsPerSec = 1/medianDelta;
-    const winPts = Math.max(1, Math.round(ptsPerSec*windowSec));
-    const half   = Math.floor(winPts/2);
+  const deltas = data.slice(1).map((d,i)=> (data[i+1].t - data[i].t) * 60);
+  const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
+  const ptsPerSec = 1/medianDelta;
+  const winPts = Math.max(1, Math.round(ptsPerSec * windowSec));
+  const half   = Math.floor(winPts/2);
 
-    const raw = data.map(d=>d.v);
-    const smooth = raw.map((_,i)=>{
-      const start = Math.max(0,i-half),
-            end   = Math.min(raw.length-1,i+half);
-      const slice = raw.slice(start,end+1);
-      return slice.reduce((a,b)=>a+b,0)/slice.length;
-    });
+  const raw = data.map(d=>d.v);
+  const smooth = raw.map((_,i)=>{
+    const start = Math.max(0, i - half),
+          end   = Math.min(raw.length - 1, i + half);
+    const slice = raw.slice(start, end+1);
+    return slice.reduce((a,b)=>a+b, 0) / slice.length;
+  });
 
-    const labels = data.map(d=>d.t.toFixed(2));
+  const labels = data.map(d => d.t.toFixed(2));
+  const step2 = Math.ceil(smooth.length / maxPoints);
+  const dsLabels = labels.filter((_,i)=> i % step2 === 0);
+  const dsValues = smooth.filter((_,i)=> i % step2 === 0);
 
-    const step2 = Math.ceil(smooth.length / maxPoints);
-    const dsLabels = labels.filter((_,i)=> i % step2 === 0);
-    const dsValues = smooth.filter((_,i)=> i % step2 === 0);
+  return { labels: dsLabels, values: dsValues };
+}
 
-    return { labels: dsLabels, values: dsValues };
-  }
 
   function drawChart(id, labels, values, varName, scaleFactor, borderColor, bgColor, exponentLabel='') {
     const scaled = values.map(v=>v*scaleFactor);
