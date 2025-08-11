@@ -430,98 +430,86 @@
 
   <script>
 
-  async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh = Infinity, windowSec=5, maxPoints=100) {
-  const resp = await fetch(csvPath);
-  const txt  = await resp.text();
-  const [hdr, ...lines] = txt.trim().split('\n');
-  const cols   = hdr.split(',');
-  const tsIdx  = cols.indexOf('timestamp');
-  const valIdx = cols.indexOf(varName);
+  async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh, windowSec=5, maxPoints=100) {
+    const resp = await fetch(csvPath);
+    const txt  = await resp.text();
+    const [hdr, ...lines] = txt.trim().split('\n');
+    const cols   = hdr.split(',');
+    const tsIdx  = cols.indexOf('timestamp');
+    const valIdx = cols.indexOf(varName);
 
-  const rows = lines.map(l => l.split(','))
-    .filter(c => c.length === cols.length)
-    .map(c => ({ ts:+c[tsIdx], v:+c[valIdx] }));
+    let rows = lines.map(l => l.split(','))
+      .filter(c => c.length === cols.length)
+      .map(c => ({ ts:+c[tsIdx], v:+c[valIdx] }));
 
-  const t0 = Math.min(...rows.map(r=>r.ts));
-  const data = rows.map(r => ({ t:(r.ts - t0)/60000, v:r.v }))
-                   .filter(d => d.t >= tminLow && d.t <= tminHigh);
+    const t0 = Math.min(...rows.map(r=>r.ts));
+    let data = rows.map(r=>({ t:(r.ts-t0)/60000, v:r.v }))
+                   .filter(d=>d.t>=tminLow && d.t<=tminHigh);
 
-  // Mask the first 30s (keep time, hide value)
-  const raw = data.map(d => (d.t <= 0.5 ? null : d.v));
+    const deltas = data.slice(1).map((d,i)=> (data[i+1].t-data[i].t)*60);
+    const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
+    const ptsPerSec = 1/medianDelta;
+    const winPts = Math.max(1, Math.round(ptsPerSec*windowSec));
+    const half   = Math.floor(winPts/2);
 
-  // Moving average that respects nulls (no smear into the gap)
-  const deltas = data.slice(1).map((d,i)=> (data[i+1].t - data[i].t) * 60);
-  const medianDelta = deltas.slice().sort((a,b)=>a-b)[Math.floor(deltas.length/2)] || (1/windowSec);
-  const ptsPerSec = 1/medianDelta;
-  const winPts = Math.max(1, Math.round(ptsPerSec * windowSec));
-  const half   = Math.floor(winPts/2);
+    const raw = data.map(d=>d.v);
+    const smooth = raw.map((_,i)=>{
+      const start = Math.max(0,i-half),
+            end   = Math.min(raw.length-1,i+half);
+      const slice = raw.slice(start,end+1);
+      return slice.reduce((a,b)=>a+b,0)/slice.length;
+    });
 
-  const smooth = raw.map((_,i)=>{
-    if (raw[i] == null) return null;
-    const start = Math.max(0, i - half);
-    const end   = Math.min(raw.length - 1, i + half);
-    const slice = raw.slice(start, end+1).filter(v => v != null);
-    return slice.length ? slice.reduce((a,b)=>a+b,0)/slice.length : null;
-  });
+    const labels = data.map(d=>d.t.toFixed(2));
 
-  // Downsample but keep nulls so the gap remains visible
-  const step = Math.max(1, Math.ceil(smooth.length / maxPoints));
-  const points = data
-    .map((d,i)=> ({ x: d.t, y: smooth[i] }))
-    .filter((_,i)=> i % step === 0);
+    const step2 = Math.ceil(smooth.length / maxPoints);
+    const dsLabels = labels.filter((_,i)=> i % step2 === 0);
+    const dsValues = smooth.filter((_,i)=> i % step2 === 0);
 
-  return { points };
-}
+    return { labels: dsLabels, values: dsValues };
+  }
 
-function drawChart(id, points, varName, scaleFactor, borderColor, bgColor, exponentLabel='', xMax=14) {
-  const scaled = points.map(p => ({ x: p.x, y: p.y == null ? null : p.y * scaleFactor }));
-  const finiteYs = scaled.map(p=>p.y).filter(Number.isFinite);
-  const minY = finiteYs.length ? Math.min(...finiteYs) : 0;
-  const maxY = finiteYs.length ? Math.max(...finiteYs) : 1;
+  function drawChart(id, labels, values, varName, scaleFactor, borderColor, bgColor, exponentLabel='') {
+    const scaled = values.map(v=>v*scaleFactor);
+    const minY = Math.min(...scaled), maxY = Math.max(...scaled);
 
-  new Chart(document.getElementById(id).getContext('2d'), {
-    type: 'line',
-    data: {
-      datasets: [{
-        label: varName + (exponentLabel || ''),
-        data: scaled,
-        parsing: false,      // use {x,y} directly
-        borderColor,
-        backgroundColor: bgColor,
-        fill: true,
-        tension: 0.3,
-        pointRadius: 2,
-        spanGaps: false      // nulls create a real gap
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { onClick: null },
-        tooltip: { mode: 'nearest', intersect: false }
+    new Chart(document.getElementById(id).getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: varName + (exponentLabel||''),
+          data: scaled,
+          borderColor,
+          backgroundColor: bgColor,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2
+        }]
       },
-      scales: {
-        x: {
-          type: 'linear',
-          min: 0,
-          max: xMax,          // force to 14.00 even if last sample is 13.99
-          title: { display: true, text: 'Time (minutes)' },
-          grid: { display: false },
-          ticks: { callback: v => Number(v).toFixed(2) }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { onClick: null },
+          tooltip: { mode: 'index', intersect: false }
         },
-        y: {
-          min: minY,
-          max: maxY,
-          title: { display: true, text: varName + (exponentLabel || '') },
-          ticks: { callback: v => v.toFixed(2) }
-        }
-      },
-      interaction: { mode: 'nearest', intersect: false }
-    }
-  });
-}
-
+        scales: {
+          x: {
+            title: { display: true, text: 'Time (minutes)' },
+            grid: { display: false }
+          },
+          y: {
+            min: minY,
+            max: maxY,
+            title: { display: true, text: varName + (exponentLabel||'') },
+            ticks: { callback: v => v.toFixed(2) }
+          }
+        },
+        interaction: { mode: 'index', intersect: false }
+      }
+    });
+  }
 
   window.onload = async () => {
     const csvA = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
@@ -542,11 +530,6 @@ function drawChart(id, points, varName, scaleFactor, borderColor, bgColor, expon
 
     const hE = await fetchAndSmooth(csvB, 'hbo',   9.50,10.00);
     drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
-
-    const hF = await fetchAndSmooth(csvB, 'hbo', 0, Infinity, 5, 500);
-    drawChart('fnirsChartF', hF.points, 'HbO', hboScale,
-          'rgba(54,162,235,1)', 'rgba(54,162,235,0.2)', hboLabel, 14);
-    
 
   };
   </script>
@@ -649,9 +632,16 @@ function drawChart(id, points, varName, scaleFactor, borderColor, bgColor, expon
     <p>
       The graph below is especially interesting because it shows fluctuations and growth over time. Let’s examine two of the biggest peaks. The first notable peak is in the first part of the session and spans from approximately 1:30 to 2:22. The second major peak comes later in the second part of the session, spanning from around 11:45 to 12:22. The first peak lasts longer, however, the second peak has a higher baseline. This could suggest that while the first peak represents a longer period of increased activity, the second peak represents a period of stronger and more intense increased activity. Before, after, and during both peaks the person was working to solve puzzles, but during the first peak there was a screen that prompted the person to create an account. The break from the game could’ve potentially relaxed the person, which serves as an explanation as to why the first peak’s baseline was lower.
     </p>
-    <div class="chart-container">
-    <canvas id="fnirsChartF"></canvas>
-  </div>
+     <div class="tooltip-image">
+      <img src="images/hello.jpeg" alt="Image 10" />
+
+      <div class="tooltip-text">
+        <ul>
+           <li> The first notable peak is in the first part of the session and spans from approximately 1:30 to 2:22.</li>
+           <li>The second major peak comes later in the second part of the session, spanning from around 11:45 to 12:22.</li>
+        </ul>
+      </div>
+    </div>    
     <div style="display: flex; align-items: center; gap: 2em; margin: 2em 0;">
       <img src="images/eeeee.jpeg" alt="Image 11" style="width: 40%; min-width: 200px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);" />
       <p style="flex: 1; font-size: 1.1em; line-height: 1.8;">
