@@ -444,8 +444,10 @@
 
   const t0 = Math.min(...rows.map(r=>r.ts));
   let data = rows.map(r => ({ t:(r.ts - t0)/60000, v:r.v }))
-                 .filter(d => d.t >= tminLow && d.t <= tminHigh)
-                 .filter(d => d.t > 0.5); // remove first 30 seconds
+                 .filter(d => d.t >= tminLow && d.t <= tminHigh);
+
+  // keep timestamps but hide first 30s values
+  data = data.map(d => d.t <= 0.5 ? { ...d, v: null } : d);
 
   const deltas = data.slice(1).map((d,i)=> (data[i+1].t - data[i].t) * 60);
   const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
@@ -455,10 +457,11 @@
 
   const raw = data.map(d=>d.v);
   const smooth = raw.map((_,i)=>{
+    if (raw[i] === null) return null; // preserve null gap
     const start = Math.max(0, i - half),
           end   = Math.min(raw.length - 1, i + half);
-    const slice = raw.slice(start, end+1);
-    return slice.reduce((a,b)=>a+b, 0) / slice.length;
+    const slice = raw.slice(start, end+1).filter(v => v !== null);
+    return slice.length ? slice.reduce((a,b)=>a+b,0)/slice.length : null;
   });
 
   const labels = data.map(d => d.t.toFixed(2));
@@ -468,6 +471,7 @@
 
   return { labels: dsLabels, values: dsValues };
 }
+
 
 
   function drawChart(id, labels, values, varName, scaleFactor, borderColor, bgColor, exponentLabel='') {
