@@ -430,7 +430,7 @@
 
   <script>
 
-  async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh, windowSec=5, maxPoints=100) {
+  async function fetchAndSmooth(csvPath, varName, tminLow, tminHigh = Infinity, windowSec=5, maxPoints=100) {
   const resp = await fetch(csvPath);
   const txt  = await resp.text();
   const [hdr, ...lines] = txt.trim().split('\n');
@@ -446,9 +446,6 @@
   let data = rows.map(r => ({ t:(r.ts - t0)/60000, v:r.v }))
                  .filter(d => d.t >= tminLow && d.t <= tminHigh);
 
-  // keep timestamps but hide first 30s values
-  data = data.map(d => d.t <= 0.5 ? { ...d, v: null } : d);
-
   const deltas = data.slice(1).map((d,i)=> (data[i+1].t - data[i].t) * 60);
   const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
   const ptsPerSec = 1/medianDelta;
@@ -457,20 +454,23 @@
 
   const raw = data.map(d=>d.v);
   const smooth = raw.map((_,i)=>{
-    if (raw[i] === null) return null; // preserve null gap
     const start = Math.max(0, i - half),
           end   = Math.min(raw.length - 1, i + half);
-    const slice = raw.slice(start, end+1).filter(v => v !== null);
-    return slice.length ? slice.reduce((a,b)=>a+b,0)/slice.length : null;
+    const slice = raw.slice(start, end+1);
+    return slice.reduce((a,b)=>a+b,0) / slice.length;
   });
 
+  // Hide first 30s worth of points (t <= 0.5 min) from being drawn
+  const smoothWithGap = smooth.map((v,i) => data[i].t <= 0.5 ? null : v);
+
   const labels = data.map(d => d.t.toFixed(2));
-  const step2 = Math.ceil(smooth.length / maxPoints);
+  const step2 = Math.ceil(smoothWithGap.length / maxPoints);
   const dsLabels = labels.filter((_,i)=> i % step2 === 0);
-  const dsValues = smooth.filter((_,i)=> i % step2 === 0);
+  const dsValues = smoothWithGap.filter((_,i)=> i % step2 === 0);
 
   return { labels: dsLabels, values: dsValues };
 }
+
 
 
 
@@ -536,7 +536,7 @@
     const hE = await fetchAndSmooth(csvB, 'hbo',   9.50,10.00);
     drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
 
-    const hF = await fetchAndSmooth(csvB, 'hbo', 0, 14);
+    const hF = await fetchAndSmooth(csvB, 'hbo', 0, Infinity);
     drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
     
 
