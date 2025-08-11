@@ -294,6 +294,46 @@
   </style>
 </head>
 <body>
+    <!-- Hero Visual Section -->
+  <div style="max-width: 1000px; margin: 0 auto 2em; text-align: center;">
+    <canvas id="heroChart" style="width:100%; height:300px;"></canvas>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+  const ctxHero = document.getElementById('heroChart').getContext('2d');
+  new Chart(ctxHero, {
+      type: 'line',
+      data: {
+          labels: ["0:30", "1:00", "1:30", "2:00", "2:30", "3:00", "3:30"],
+          datasets: [{
+              label: 'Brain Activity (HbO)',
+              data: [0.8, 1.1, 1.3, 1.4, 1.2, 1.0, 0.9],
+              borderColor: '#4b0082',
+              backgroundColor: 'rgba(75, 0, 130, 0.1)',
+              tension: 0.4,
+              fill: true,
+              pointRadius: 4,
+              pointHoverRadius: 8
+          }]
+      },
+      options: {
+          responsive: true,
+          animation: {
+              duration: 2000,
+              easing: 'easeOutQuart'
+          },
+          plugins: {
+              legend: { display: false },
+              tooltip: { enabled: true }
+          },
+          scales: {
+              x: { title: { display: true, text: 'Time (Minutes)' } },
+              y: { title: { display: true, text: 'HbO Level' } }
+          }
+      }
+  });
+  </script>
 
   <div class="title-page">
     <h1>🫐👓 Reading vs. Gaming: Comparing Cognitive Patterns with Blueberry Data 🧠📈</h1>
@@ -649,7 +689,7 @@
   </div>
 
 
-  <div class="sources" style="max-width: 900px; margin: 2em auto; background: #ffffff; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+  <div class="sources" style="max-width: 900px; margin: 0 auto; background: #ffffff; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
     <h2 style="font-size: 1.8em; font-weight: bold; color: #222; margin-bottom: 0.5em;">Sources</h2>
     <ul style="font-size: 1.1em; line-height: 1.8; padding-left: 1.5em;">
       <li><a href="https://www.sciencedirect.com/topics/engineering/biosensing" target="_blank">Biosensing Overview – ScienceDirect</a></li>
