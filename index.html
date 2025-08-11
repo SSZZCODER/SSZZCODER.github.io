@@ -470,23 +470,26 @@
   }
 
   function drawChart(id, labels, values, varName, scaleFactor, borderColor, bgColor, exponentLabel='') {
-    const scaled = values.map(v=>v*scaleFactor);
-    const minY = Math.min(...scaled), maxY = Math.max(...scaled);
+  const scaled = values.map(v => v == null ? null : v * scaleFactor);
+  const nums = scaled.filter(v => v != null && Number.isFinite(v));
+  const minY = Math.min(...nums), maxY = Math.max(...nums);
 
-    new Chart(document.getElementById(id).getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: varName + (exponentLabel||''),
-          data: scaled,
-          borderColor,
-          backgroundColor: bgColor,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 2
-        }]
-      },
+  new Chart(document.getElementById(id).getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: varName + (exponentLabel||''),
+        data: scaled,
+        borderColor,
+        backgroundColor: bgColor,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        spanGaps: false   // ensures the gap is not connected
+      }]
+    },
+    
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -531,8 +534,17 @@
     const hE = await fetchAndSmooth(csvB, 'hbo',   9.50,10.00);
     drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
 
-     const hF = await fetchAndSmooth(csvB, 'hbo',   0, Infinity);
-    drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
+     const hF = await fetchAndSmooth(csvB, 'hbo', 0, Infinity);
+
+// hide values for first 0.50 minutes but keep timestamps
+const cutoffMin = 0.50;
+const labelsF = hF.labels;
+const valuesF = hF.values.map((v, i) =>
+  parseFloat(labelsF[i]) < cutoffMin ? null : v
+);
+
+drawChart('fnirsChartF', labelsF, valuesF, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
+
 
   };
   </script>
