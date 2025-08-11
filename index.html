@@ -438,83 +438,90 @@
   const tsIdx  = cols.indexOf('timestamp');
   const valIdx = cols.indexOf(varName);
 
-  let rows = lines.map(l => l.split(','))
+  const rows = lines.map(l => l.split(','))
     .filter(c => c.length === cols.length)
     .map(c => ({ ts:+c[tsIdx], v:+c[valIdx] }));
 
   const t0 = Math.min(...rows.map(r=>r.ts));
-  let data = rows.map(r => ({ t:(r.ts - t0)/60000, v:r.v }))
-                 .filter(d => d.t >= tminLow && d.t <= tminHigh);
+  const data = rows.map(r => ({ t:(r.ts - t0)/60000, v:r.v }))
+                   .filter(d => d.t >= tminLow && d.t <= tminHigh);
 
+  // Mask the first 30s (keep time, hide value)
+  const raw = data.map(d => (d.t <= 0.5 ? null : d.v));
+
+  // Moving average that respects nulls (no smear into the gap)
   const deltas = data.slice(1).map((d,i)=> (data[i+1].t - data[i].t) * 60);
-  const medianDelta = deltas.sort()[Math.floor(deltas.length/2)] || (1/windowSec);
+  const medianDelta = deltas.slice().sort((a,b)=>a-b)[Math.floor(deltas.length/2)] || (1/windowSec);
   const ptsPerSec = 1/medianDelta;
   const winPts = Math.max(1, Math.round(ptsPerSec * windowSec));
   const half   = Math.floor(winPts/2);
 
-  const raw = data.map(d=>d.v);
   const smooth = raw.map((_,i)=>{
-    const start = Math.max(0, i - half),
-          end   = Math.min(raw.length - 1, i + half);
-    const slice = raw.slice(start, end+1);
-    return slice.reduce((a,b)=>a+b,0) / slice.length;
+    if (raw[i] == null) return null;
+    const start = Math.max(0, i - half);
+    const end   = Math.min(raw.length - 1, i + half);
+    const slice = raw.slice(start, end+1).filter(v => v != null);
+    return slice.length ? slice.reduce((a,b)=>a+b,0)/slice.length : null;
   });
 
-  // Hide first 30s worth of points (t <= 0.5 min) from being drawn
-  const smoothWithGap = smooth.map((v,i) => data[i].t <= 0.5 ? null : v);
+  // Downsample but keep nulls so the gap remains visible
+  const step = Math.max(1, Math.ceil(smooth.length / maxPoints));
+  const points = data
+    .map((d,i)=> ({ x: d.t, y: smooth[i] }))
+    .filter((_,i)=> i % step === 0);
 
-  const labels = data.map(d => d.t.toFixed(2));
-  const step2 = Math.ceil(smoothWithGap.length / maxPoints);
-  const dsLabels = labels.filter((_,i)=> i % step2 === 0);
-  const dsValues = smoothWithGap.filter((_,i)=> i % step2 === 0);
-
-  return { labels: dsLabels, values: dsValues };
+  return { points };
 }
 
+function drawChart(id, points, varName, scaleFactor, borderColor, bgColor, exponentLabel='', xMax=14) {
+  const scaled = points.map(p => ({ x: p.x, y: p.y == null ? null : p.y * scaleFactor }));
+  const finiteYs = scaled.map(p=>p.y).filter(Number.isFinite);
+  const minY = finiteYs.length ? Math.min(...finiteYs) : 0;
+  const maxY = finiteYs.length ? Math.max(...finiteYs) : 1;
 
-
-
-  function drawChart(id, labels, values, varName, scaleFactor, borderColor, bgColor, exponentLabel='') {
-    const scaled = values.map(v=>v*scaleFactor);
-    const minY = Math.min(...scaled), maxY = Math.max(...scaled);
-
-    new Chart(document.getElementById(id).getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: varName + (exponentLabel||''),
-          data: scaled,
-          borderColor,
-          backgroundColor: bgColor,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 2
-        }]
+  new Chart(document.getElementById(id).getContext('2d'), {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: varName + (exponentLabel || ''),
+        data: scaled,
+        parsing: false,      // use {x,y} directly
+        borderColor,
+        backgroundColor: bgColor,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        spanGaps: false      // nulls create a real gap
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { onClick: null },
+        tooltip: { mode: 'nearest', intersect: false }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { onClick: null },
-          tooltip: { mode: 'index', intersect: false }
+      scales: {
+        x: {
+          type: 'linear',
+          min: 0,
+          max: xMax,          // force to 14.00 even if last sample is 13.99
+          title: { display: true, text: 'Time (minutes)' },
+          grid: { display: false },
+          ticks: { callback: v => Number(v).toFixed(2) }
         },
-        scales: {
-          x: {
-            title: { display: true, text: 'Time (minutes)' },
-            grid: { display: false }
-          },
-          y: {
-            min: minY,
-            max: maxY,
-            title: { display: true, text: varName + (exponentLabel||'') },
-            ticks: { callback: v => v.toFixed(2) }
-          }
-        },
-        interaction: { mode: 'index', intersect: false }
-      }
-    });
-  }
+        y: {
+          min: minY,
+          max: maxY,
+          title: { display: true, text: varName + (exponentLabel || '') },
+          ticks: { callback: v => v.toFixed(2) }
+        }
+      },
+      interaction: { mode: 'nearest', intersect: false }
+    }
+  });
+}
+
 
   window.onload = async () => {
     const csvA = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
@@ -536,8 +543,9 @@
     const hE = await fetchAndSmooth(csvB, 'hbo',   9.50,10.00);
     drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
 
-    const hF = await fetchAndSmooth(csvB, 'hbo', 0, Infinity);
-    drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
+    const hF = await fetchAndSmooth(csvB, 'hbo', 0, Infinity, 5, 500);
+    drawChart('fnirsChartF', hF.points, 'HbO', hboScale,
+          'rgba(54,162,235,1)', 'rgba(54,162,235,0.2)', hboLabel, 14);
     
 
   };
