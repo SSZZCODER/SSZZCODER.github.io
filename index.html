@@ -531,7 +531,7 @@
     const hE = await fetchAndSmooth(csvB, 'hbo',   9.50,10.00);
     drawChart('fnirsChartE', hE.labels, hE.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
 
-    const hF = await fetchAndSmooth(csvB, 'hbo');
+    const hF = await fetchAndSmooth(csvB, 'hbo', 0, 14);
     drawChart('fnirsChartF', hF.labels, hF.values, 'HbO', hboScale, 'rgba(54,162,235,1)','rgba(54,162,235,0.2)', hboLabel);
     
 
