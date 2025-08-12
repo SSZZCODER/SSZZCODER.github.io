@@ -354,7 +354,170 @@
 
   <div class="discussion">
     <h2>Discussion</h2>
-    <img src="images/usethis2.png" alt="Image 1" />
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
+    h2 { margin: 0 0 8px; }
+    #chart { width: 100%; height: 1000px; }
+  </style>
+</head>
+<body>
+  <h2>Smoothed Optical Data From Reading and Note-Taking Session</h2>
+  <div id="chart"></div>
+
+  <script>
+    const CSV_PATH = '2025-07-13_11_26_50_AM-optical-data.csv';
+    const COLS   = ['hbo', 'hbr', 'flowActivity', 'heartRate', 'flowIntensity'];
+    const LABELS = ['hbo', 'hbr', 'flowActivity', 'heartRate', 'flowIntensity'];
+    const WINDOW_SECONDS = 5; 
+    const CUT_FIRST_MIN = 0.5;
+
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const header = lines.shift().split(',').map(h => h.trim());
+      const rows = lines.map(line => {
+        const parts = line.split(',');
+        const o = {};
+        header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
+        return o;
+      });
+      return { header, rows };
+    }
+
+    function toNum(v) {
+      if (v === '' || v == null) return null;
+      const s = String(v).trim();
+      if (s === '' || /^(nan|null|none|undefined)$/i.test(s)) return null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function median(a) {
+      const vals = a.filter(Number.isFinite).slice().sort((x,y)=>x-y);
+      const n = vals.length;
+      if (!n) return NaN;
+      return (n % 2) ? vals[(n-1)/2] : (vals[n/2-1] + vals[n/2]) / 2;
+    }
+
+    function movingAverageCentered(arr, halfWindow) {
+      const n = arr.length;
+      const prefix = new Array(n + 1).fill(0);
+      const counts = new Array(n + 1).fill(0);
+      for (let i = 0; i < n; i++) {
+        const v = arr[i];
+        const add = Number.isFinite(v) ? v : 0;
+        const cnt = Number.isFinite(v) ? 1 : 0;
+        prefix[i+1] = prefix[i] + add;
+        counts[i+1] = counts[i] + cnt;
+      }
+      const out = new Array(n).fill(null);
+      for (let i = 0; i < n; i++) {
+        const L = Math.max(0, i - halfWindow);
+        const R = Math.min(n - 1, i + halfWindow);
+        const sum = prefix[R+1] - prefix[L];
+        const cnt = counts[R+1] - counts[L];
+        out[i] = cnt > 0 ? sum / cnt : null;
+      }
+      return out;
+    }
+
+    (async function main() {
+      const resp = await fetch(CSV_PATH);
+      const text = await resp.text();
+      const { rows } = parseCSV(text);
+
+      const tsRaw = rows.map(r => toNum(r.timestamp));
+      const tsValid = tsRaw.filter(Number.isFinite);
+      if (!tsValid.length) return;
+      const t0 = Math.min(...tsValid);
+      const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
+
+      const diffs = [];
+      for (let i = 1; i < tsRaw.length; i++) {
+        const a = tsRaw[i-1], b = tsRaw[i];
+        if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
+      }
+      const medDiffMs = median(diffs);
+      const samplingRateHz = 1000 / medDiffMs;
+      const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
+      const halfWindow = Math.max(0, Math.floor(windowSize / 2));
+
+      const traces = [];
+      const rowsN = COLS.length;
+
+      for (let i = 0; i < COLS.length; i++) {
+        const col = COLS[i];
+        const raw = rows.map(r => toNum(r[col]));
+        const smoothed = movingAverageCentered(raw, halfWindow);
+
+        const xVals = minutes.slice();
+        const yVals = smoothed.slice();
+        for (let j = 0; j < xVals.length; j++) {
+          if (!Number.isFinite(xVals[j]) || xVals[j] <= CUT_FIRST_MIN) {
+            yVals[j] = null;
+          }
+        }
+
+        traces.push({
+          type: 'scatter',
+          mode: 'lines',
+          name: LABELS[i],
+          x: xVals,
+          y: yVals,
+          xaxis: 'x' + (i ? i+1 : ''),
+          yaxis: 'y' + (i ? i+1 : ''),
+          hovertemplate: `${LABELS[i]}<br>t=%{x} min<br>value=%{y}<extra></extra>`
+        });
+      }
+
+      const layout = {
+        grid: { rows: rowsN, columns: 1, pattern: 'independent', roworder: 'top to bottom' },
+        hovermode: 'x unified',
+        hoverlabel: { namelength: -1 },
+        spikedistance: -1,
+        margin: { l: 60, r: 20, t: 10, b: 40 },
+        uirevision: true
+      };
+
+      for (let i = 0; i < rowsN; i++) {
+        const isBottom = (i === rowsN - 1);
+        const xKey = 'xaxis' + (i ? i+1 : '');
+        const yKey = 'yaxis' + (i ? i+1 : '');
+
+        // Get the magnitude for annotation like matplotlib's ×10^n
+        const allY = traces[i].y.filter(Number.isFinite);
+        const maxAbs = Math.max(...allY.map(Math.abs));
+        let powerNote = '';
+        if (maxAbs !== 0 && (maxAbs >= 1000 || maxAbs < 0.1)) {
+          const exp = Math.floor(Math.log10(maxAbs));
+          powerNote = `×10^${exp}`;
+          // scale y values down for display
+          traces[i].y = traces[i].y.map(v => Number.isFinite(v) ? v / Math.pow(10, exp) : v);
+        }
+
+        layout[xKey] = {
+          title: isBottom ? 'Time (Minutes)' : undefined,
+          tickmode: 'linear',
+          dtick: 0.25,
+          showgrid: true,
+          showspikes: true,
+          spikemode: 'across',
+          spikesnap: 'cursor',
+          range: [0, Math.max(...minutes.filter(Number.isFinite))],
+          matches: i ? 'x' : undefined
+        };
+
+        layout[yKey] = {
+          title: powerNote ? `${LABELS[i]} (${powerNote})` : LABELS[i],
+          zeroline: false,
+          showgrid: true,
+          tickformat: ',.2f' // force normal number format
+        };
+      }
+
+      Plotly.newPlot('chart', traces, layout, { responsive: true });
+    })();
+  </script>
     <div class="timeline" id="timeline"></div>
 
     <script>
