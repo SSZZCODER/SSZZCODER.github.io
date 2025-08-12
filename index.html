@@ -290,7 +290,7 @@
     .conclusions img:hover {
       transform: scale(1.03);
     }
-  #bb-plot1 { flex: 1 1 100%; }
+
   </style>
 </head>
 <body>
@@ -354,15 +354,19 @@
 
   <div class="discussion">
     <h2>Discussion</h2>
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-
-  <!-- Chart container -->
-  <div id="bb-plot1" style="width:100%; height:70vh; margin:24px 0;"></div>
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
+    h2 { margin: 0 0 8px; }
+    #chart { width: 100%; height: 1000px; }
+  </style>
+</head>
+<body>
+  <h2>Smoothed Optical Data From Reading and Note-Taking Session</h2>
+  <div id="chart"></div>
 
   <script>
-  (function() {
-    const containerId = 'bb-plot1';
-    const CSV_PATH = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
+    const CSV_PATH = '2025-07-13_11_26_50_AM-optical-data.csv';
     const COLS   = ['hbo', 'hbr', 'flowActivity', 'heartRate', 'flowIntensity'];
     const LABELS = ['hbo', 'hbr', 'flowActivity', 'heartRate', 'flowIntensity'];
     const WINDOW_SECONDS = 5; 
@@ -417,10 +421,7 @@
       return out;
     }
 
-    async function render() {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-
+    (async function main() {
       const resp = await fetch(CSV_PATH);
       const text = await resp.text();
       const { rows } = parseCSV(text);
@@ -442,6 +443,8 @@
       const halfWindow = Math.max(0, Math.floor(windowSize / 2));
 
       const traces = [];
+      const rowsN = COLS.length;
+
       for (let i = 0; i < COLS.length; i++) {
         const col = COLS[i];
         const raw = rows.map(r => toNum(r[col]));
@@ -450,7 +453,9 @@
         const xVals = minutes.slice();
         const yVals = smoothed.slice();
         for (let j = 0; j < xVals.length; j++) {
-          if (!Number.isFinite(xVals[j]) || xVals[j] <= CUT_FIRST_MIN) yVals[j] = null;
+          if (!Number.isFinite(xVals[j]) || xVals[j] <= CUT_FIRST_MIN) {
+            yVals[j] = null;
+          }
         }
 
         traces.push({
@@ -466,7 +471,7 @@
       }
 
       const layout = {
-        grid: { rows: COLS.length, columns: 1, pattern: 'independent', roworder: 'top to bottom' },
+        grid: { rows: rowsN, columns: 1, pattern: 'independent', roworder: 'top to bottom' },
         hovermode: 'x unified',
         hoverlabel: { namelength: -1 },
         spikedistance: -1,
@@ -474,17 +479,19 @@
         uirevision: true
       };
 
-      for (let i = 0; i < COLS.length; i++) {
-        const isBottom = (i === COLS.length - 1);
+      for (let i = 0; i < rowsN; i++) {
+        const isBottom = (i === rowsN - 1);
         const xKey = 'xaxis' + (i ? i+1 : '');
         const yKey = 'yaxis' + (i ? i+1 : '');
 
+        // Get the magnitude for annotation like matplotlib's ×10^n
         const allY = traces[i].y.filter(Number.isFinite);
-        const maxAbs = allY.length ? Math.max(...allY.map(Math.abs)) : 0;
+        const maxAbs = Math.max(...allY.map(Math.abs));
         let powerNote = '';
         if (maxAbs !== 0 && (maxAbs >= 1000 || maxAbs < 0.1)) {
           const exp = Math.floor(Math.log10(maxAbs));
           powerNote = `×10^${exp}`;
+          // scale y values down for display
           traces[i].y = traces[i].y.map(v => Number.isFinite(v) ? v / Math.pow(10, exp) : v);
         }
 
@@ -496,6 +503,7 @@
           showspikes: true,
           spikemode: 'across',
           spikesnap: 'cursor',
+          range: [0, Math.max(...minutes.filter(Number.isFinite))],
           matches: i ? 'x' : undefined
         };
 
@@ -503,22 +511,13 @@
           title: powerNote ? `${LABELS[i]} (${powerNote})` : LABELS[i],
           zeroline: false,
           showgrid: true,
-          tickformat: ',.2f'
+          tickformat: ',.2f' // force normal number format
         };
       }
 
-      Plotly.newPlot(container, traces, layout, { responsive: true });
-      new ResizeObserver(() => Plotly.Plots.resize(container)).observe(container);
-    }
-
-    render();
-  })();
+      Plotly.newPlot('chart', traces, layout, { responsive: true });
+    })();
   </script>
-
-  <!-- Spacer -->
-  <div style="height:24px;"></div>
-</div>
-
     <div class="timeline" id="timeline"></div>
 
     <script>
