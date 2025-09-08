@@ -380,6 +380,9 @@
       line-height: 1.7;
     }
   </style>
+
+  <!-- Chart.js DataLabels plugin (for the bar labels) -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 
 <body>
@@ -1268,171 +1271,13 @@
     <div class="chart-container">
       <canvas id="fnirsChartF"></canvas>
     </div>
-    <div style="display: flex; align-items: center; gap: 2em; margin: 2em 0;">
-      <img src="images/eeeee.jpeg" alt="Image 11"
-        style="width: 40%; min-width: 200px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);" />
-      <p style="flex: 1; font-size: 1.1em; line-height: 1.8;">
-        Taking a closer look at the graph, we can see that the baseline started increasing at 8 minutes. Around that
-        time, the person playing the game leveled up, meaning that the game got harder, causing the person to put in
-        more effort.
-      </p>
-    </div>
-  </div>
 
-  <div class="conclusions">
-    <h2>Conclusion</h2>
-
-    <p>
-      Overall, this study contrasts how different tasks lead to very different neurovascular responses.
-    </p>
-
-    <div id="hbo-comparison" style="width:100%;height:500px;"></div>
-
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-    <script>
-      (async function () {
-        // Config
-        const file1 = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv'; // Reading + note-taking
-        const file2 = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv'; // Pattern game
-        const colName = 'hbo';        // Column to compare
-        const windowSeconds = 5;      // Smoothing window
-        const cutFirstMin = 0.5;      // Remove first 30 sec
-
-        function parseCSV(text) {
-          const lines = text.trim().split(/\r?\n/);
-          const header = lines.shift().split(',').map(h => h.trim());
-          const rows = lines.map(line => {
-            const parts = line.split(',');
-            const o = {};
-            header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
-            return o;
-          });
-          return { header, rows };
-        }
-
-        function toNum(v) {
-          if (v === '' || v == null) return null;
-          const s = String(v).trim();
-          if (s === '' || /^(nan|null|none|undefined)$/i.test(s)) return null;
-          const n = Number(s);
-          return Number.isFinite(n) ? n : null;
-        }
-
-        function median(a) {
-          const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
-          const n = vals.length;
-          if (!n) return NaN;
-          return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
-        }
-
-        function movingAverageCentered(arr, halfWindow) {
-          const n = arr.length;
-          const prefix = new Array(n + 1).fill(0);
-          const counts = new Array(n + 1).fill(0);
-          for (let i = 0; i < n; i++) {
-            const v = arr[i];
-            const add = Number.isFinite(v) ? v : 0;
-            const cnt = Number.isFinite(v) ? 1 : 0;
-            prefix[i + 1] = prefix[i] + add;
-            counts[i + 1] = counts[i] + cnt;
-          }
-          const out = new Array(n).fill(null);
-          for (let i = 0; i < n; i++) {
-            const L = Math.max(0, i - halfWindow);
-            const R = Math.min(n - 1, i + halfWindow);
-            const sum = prefix[R + 1] - prefix[L];
-            const cnt = counts[R + 1] - counts[L];
-            out[i] = cnt > 0 ? sum / cnt : null;
-          }
-          return out;
-        }
-
-        async function processCSV(path) {
-          const resp = await fetch(path);
-          const text = await resp.text();
-          const { rows } = parseCSV(text);
-
-          const tsRaw = rows.map(r => toNum(r.timestamp));
-          const tsValid = tsRaw.filter(Number.isFinite);
-          const t0 = Math.min(...tsValid);
-
-          const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
-
-          const diffs = [];
-          for (let i = 1; i < tsRaw.length; i++) {
-            if (Number.isFinite(tsRaw[i - 1]) && Number.isFinite(tsRaw[i])) {
-              diffs.push(tsRaw[i] - tsRaw[i - 1]);
-            }
-          }
-          const medDiffMs = median(diffs);
-          const samplingRateHz = 1000 / medDiffMs;
-          const windowSize = Math.max(1, Math.round(samplingRateHz * windowSeconds));
-          const halfWindow = Math.floor(windowSize / 2);
-
-          const raw = rows.map(r => toNum(r[colName]));
-          const smoothed = movingAverageCentered(raw, halfWindow);
-
-          // Remove first cutFirstMin minutes
-          const xVals = [], yVals = [];
-          for (let i = 0; i < minutes.length; i++) {
-            if (Number.isFinite(minutes[i]) && minutes[i] > cutFirstMin) {
-              xVals.push(minutes[i]);
-              yVals.push(smoothed[i]);
-            }
-          }
-          return { xVals, yVals };
-        }
-
-        // Process both CSVs
-        const data1 = await processCSV(file1);
-        const data2 = await processCSV(file2);
-
-        // Determine exponent scaling
-        const allYVals = [...data1.yVals, ...data2.yVals].filter(Number.isFinite);
-        const maxAbs = Math.max(...allYVals.map(Math.abs), 0);
-        let powerNote = '';
-        let scaleFactor = 1;
-        if (maxAbs !== 0 && (maxAbs >= 1000 || maxAbs < 0.1)) {
-          const exp = Math.floor(Math.log10(maxAbs));
-          powerNote = `×10^${exp}`;
-          scaleFactor = Math.pow(10, exp);
-        }
-
-        // Apply scaling
-        const trace1 = {
-          type: 'scatter',
-          mode: 'lines',
-          name: 'Reading & Note-taking',
-          x: data1.xVals,
-          y: data1.yVals.map(v => Number.isFinite(v) ? v / scaleFactor : null),
-          line: { color: 'blue', dash: 'solid' }
-        };
-        const trace2 = {
-          type: 'scatter',
-          mode: 'lines',
-          name: 'Pattern Game',
-          x: data2.xVals,
-          y: data2.yVals.map(v => Number.isFinite(v) ? v / scaleFactor : null),
-          line: { color: 'blue', dash: 'dot' }
-        };
-
-        const layout = {
-          title: `HbO Comparison: Reading + Note-taking vs Pattern Game`,
-          xaxis: { title: 'Time (Minutes)' },
-          yaxis: { title: powerNote ? `${colName} (${powerNote})` : colName },
-          hovermode: 'x unified',
-          legend: { x: 0, y: 1.1, orientation: 'h' },
-          margin: { t: 50, l: 60, r: 20, b: 50 }
-        };
-
-        Plotly.newPlot('hbo-comparison', [trace1, trace2], layout, { responsive: true });
-      })();
-    </script>
-
-
+    <!-- INTERACTIVE BAR CHART #1: replaces static image for reading session -->
     <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 2em; flex-wrap: wrap;">
-      <img src="images/download (5).png" alt="overlay" style="max-width: 45%; min-width: 300px;" />
-      <p style="flex: 1;">
+      <div class="chart-container" style="flex:1; min-width:300px;">
+        <canvas id="readingBars"></canvas>
+      </div>
+      <p style="flex: 1; font-size: 1.1em; line-height: 1.8;">
         This bar chart shows the highest and lowest peaks of brain activity during the reading and note-taking session.
         The left side of the chart represents when the person first started taking notes, which makes sense since they
         just finished reading a page that didn't require much understanding. The right side of the chart, on the other
@@ -1443,8 +1288,12 @@
     <p style="margin-bottom: 2em;">
       Similarly, when analyzing the pattern game session, a different set of cognitive patterns emerges.
     </p>
+
+    <!-- INTERACTIVE BAR CHART #2: replaces static image for pattern game session -->
     <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 2em; flex-wrap: wrap;">
-      <img src="images/download (4).png" alt="overlay" style="max-width: 45%; min-width: 300px;" />
+      <div class="chart-container" style="flex:1; min-width:300px;">
+        <canvas id="patternBars"></canvas>
+      </div>
       <p style="flex: 1;">
         Like the bar chart at the top, this chart also shows the lowest and highest points of brain activity during the
         pattern game session. The left side of the bar chart shows where the person first started the pattern game and
@@ -1454,6 +1303,7 @@
         looking at answer choices and matching the shape that was added.
       </p>
     </div>
+
     <p>
       These are some mock images of what the app would show and track.
     </p>
@@ -1533,6 +1383,72 @@
       <li><a href="downloads/opticaldatafrompatterngamesession.csv" download>Download Pattern Game Session Data</a></li>
     </ul>
   </div>
+
+  <!-- Init the two interactive bar charts -->
+  <script>
+    (function () {
+      // Register plugin if present
+      if (window.ChartDataLabels && window.Chart) {
+        Chart.register(ChartDataLabels);
+      }
+
+      const toSci = v => Number(v).toExponential(2);
+      const barColor = v => (v >= 0 ? 'rgba(255,99,132,0.85)' : 'rgba(135,206,235,0.95)');
+
+      function makeOptions() {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: { label: ctx => ` HbO: ${toSci(ctx.parsed.y)}` }
+            },
+            datalabels: {
+              anchor: ctx => (ctx.parsed.y >= 0 ? 'end' : 'start'),
+              align: ctx => (ctx.parsed.y >= 0 ? 'end' : 'start'),
+              offset: 6,
+              formatter: v => toSci(v),
+              font: { weight: 'bold' }
+            }
+          },
+          scales: {
+            x: { grid: { display: false } },
+            y: {
+              grid: { borderDash: [4, 4] },
+              ticks: { callback: v => toSci(v) },
+              title: { display: true, text: 'HbO Level' }
+            }
+          }
+        };
+      }
+
+      function drawBars(canvasId, labels, values) {
+        const el = document.getElementById(canvasId);
+        if (!el || !window.Chart) return;
+        new Chart(el.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: values.map(barColor),
+              borderRadius: 10
+            }]
+          },
+          options: makeOptions()
+        });
+      }
+
+      // Reading & note-taking
+      drawBars('readingBars', ['45 sec', '1:43'], [-2.52e-15, 1.51e-14]);
+
+      // Pattern game
+      drawBars('patternBars',
+        ['1:43 (Smallest Effect)', '13:00 (Largest Effect)'],
+        [-6.72e-16, 7.78e-15]);
+    })();
+  </script>
 
 </body>
 
