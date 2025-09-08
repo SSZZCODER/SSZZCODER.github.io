@@ -181,6 +181,7 @@
       opacity: 1;
     }
 
+    /* Track */
     .timeline {
       position: relative;
       width: 100%;
@@ -188,8 +189,13 @@
       background: #ccc;
       border-radius: 2px;
       margin: 1em 0;
+
+      /* allow big tooltips + raise layer */
+      overflow: visible;
+      z-index: 9990;
     }
 
+    /* Ticks (unchanged) */
     .tick-major,
     .tick-minor {
       position: absolute;
@@ -216,6 +222,7 @@
       top: -2px;
     }
 
+    /* Dot */
     .dot {
       position: absolute;
       top: 50%;
@@ -225,31 +232,52 @@
       border-radius: 50%;
       transform: translate(-50%, -50%);
       cursor: pointer;
+      z-index: 9991;
+      /* above track */
     }
 
+    /* Tooltip (CSS-only solution) */
     .dot .tooltip {
       position: absolute;
-      top: -160px;
+      /* place ABOVE the dot */
+      bottom: calc(100% + 8px);
       left: 50%;
       transform: translateX(-50%);
+
+      /* on top + hidden by default */
+      z-index: 9999;
       visibility: hidden;
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: opacity .2s;
       pointer-events: none;
+
+      /* big, but never wider than the viewport */
+      max-width: min(92vw, 720px);
     }
 
-    .dot .tooltip img {
-      max-width: 200px;
-      max-height: 150px;
-      border: 2px solid #fff;
-      border-radius: 4px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    }
-
+    /* show on hover */
     .dot:hover .tooltip {
       visibility: visible;
       opacity: 1;
     }
+
+    /* Image scales to tooltip box */
+    .dot .tooltip img {
+      width: 100%;
+      height: auto;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    /* Optional: slightly smaller on very small screens */
+    @media (max-width: 480px) {
+      .dot .tooltip {
+        max-width: min(94vw, 560px);
+      }
+    }
+
+
 
     .conclusions {
       max-width: 900px;
@@ -293,26 +321,64 @@
     .conclusions img:hover {
       transform: scale(1.03);
     }
-    .story-row{
-      display:flex; align-items:center; gap:2em; margin:2em 0; flex-wrap:wrap;
-      background:#fff; border-radius:12px; padding:1.25em;
-      box-shadow:0 4px 12px rgba(0,0,0,0.1);
-    }
-    .story-row.reverse{ flex-direction:row-reverse; }
 
-    .story-media{ flex:1 1 380px; min-width:260px; }
-    .story-media img{
-      width:100%; height:auto; display:block;
-      border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    .story-row {
+      display: flex;
+      align-items: center;
+      gap: 2em;
+      margin: 2em 0;
+      flex-wrap: wrap;
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25em;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .story-copy{ flex:1 1 360px; min-width:260px; }
-    .story-eyebrow{
-      display:inline-block; font-size:.85em; letter-spacing:.03em; text-transform:uppercase;
-      color:#4b0082; background:#e9e3ff; padding:.25em .6em; border-radius:999px; margin-bottom:.5em;
+    .story-row.reverse {
+      flex-direction: row-reverse;
     }
-    .story-copy h3{ margin:.25em 0 .4em; font-size:1.4em; color:#222; }
-    .story-copy p{ margin:0; font-size:1.05em; line-height:1.7; }
+
+    .story-media {
+      flex: 1 1 380px;
+      min-width: 260px;
+    }
+
+    .story-media img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .story-copy {
+      flex: 1 1 360px;
+      min-width: 260px;
+    }
+
+    .story-eyebrow {
+      display: inline-block;
+      font-size: .85em;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+      color: #4b0082;
+      background: #e9e3ff;
+      padding: .25em .6em;
+      border-radius: 999px;
+      margin-bottom: .5em;
+    }
+
+    .story-copy h3 {
+      margin: .25em 0 .4em;
+      font-size: 1.4em;
+      color: #222;
+    }
+
+    .story-copy p {
+      margin: 0;
+      font-size: 1.05em;
+      line-height: 1.7;
+    }
   </style>
 </head>
 
@@ -341,268 +407,272 @@
       <li>We used Google Colab, a software that allows us to run Python and work together, and a few libraries like
         pandas and Matplotlib to visualize the data.</li>
     </ul>
-   
+
 
   </div>
 
   <div class="discussion">
     <h2>Discussion</h2>
-  <!-- BEGIN: Reading & Note-Taking — five separate Chart.js graphs -->
-<section id="reading-chart-block" class="chart-block no-flex-scope">
-  <h2 class="chart-title">Smoothed Optical Data From Reading and Note-Taking Session</h2>
+    <!-- BEGIN: Reading & Note-Taking — five separate Chart.js graphs -->
+    <section id="reading-chart-block" class="chart-block no-flex-scope">
+      <h2 class="chart-title">Smoothed Optical Data From Reading and Note-Taking Session</h2>
 
-  <div id="reading-chart-stack">
-    <div class="chart-mini"><canvas id="reading_hbo"></canvas></div>
-    <div class="chart-mini"><canvas id="reading_hbr"></canvas></div>
-    <div class="chart-mini"><canvas id="reading_flowActivity"></canvas></div>
-    <div class="chart-mini"><canvas id="reading_heartRate"></canvas></div>
-    <div class="chart-mini"><canvas id="reading_flowIntensity"></canvas></div>
-  </div>
-</section>
+      <div id="reading-chart-stack">
+        <div class="chart-mini"><canvas id="reading_hbo"></canvas></div>
+        <div class="chart-mini"><canvas id="reading_hbr"></canvas></div>
+        <div class="chart-mini"><canvas id="reading_flowActivity"></canvas></div>
+        <div class="chart-mini"><canvas id="reading_heartRate"></canvas></div>
+        <div class="chart-mini"><canvas id="reading_flowIntensity"></canvas></div>
+      </div>
+    </section>
 
-<style>
-  /* Keep this block immune to the big flex rule earlier in your CSS */
-  .discussion #reading-chart-block,
-  .discussion #reading-chart-block *,
-  #reading-chart-block,
-  #reading-chart-block * {
-    display: block !important;
-  }
-
-  #reading-chart-block {
-    margin: 1.5rem 0;
-    padding: 1rem 1rem 0.5rem;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    position: relative;
-    isolation: isolate;
-    z-index: 0;
-    clear: both;
-  }
-
-  #reading-chart-block .chart-title {
-    margin: 0 0 0.75rem;
-    font-size: 1.25rem;
-    line-height: 1.2;
-    color: #222;
-  }
-
-  #reading-chart-stack {
-    width: 100%;
-    display: grid;
-    grid-template-rows: repeat(5, 1fr);
-    gap: 14px;
-  }
-
-  .chart-mini {
-    width: 100%;
-    height: 180px;       /* tweak this to taste */
-    position: relative;
-  }
-  .chart-mini canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  @media (max-width: 768px) {
-    .chart-mini { height: 150px; }
-  }
-
-  #reading-chart-block::after {
-    content: "";
-    display: block;
-    height: 1px;
-    margin-top: 1rem;
-  }
-</style>
-
-<!-- Chart.js v3 (safe to include even if already on page) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
-<script>
-  (async function () {
-    // ---- Config ----
-    const CSV_PATH = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
-    const WINDOW_SECONDS = 5;
-    const CUT_FIRST_MIN = 0.5; // minutes
-
-    // Colors
-    const COLORS = {
-      hbo:           { line: 'rgba(54,162,235,1)',  fill: 'rgba(54,162,235,0.12)' }, // blue
-      hbr:           { line: 'rgba(255,99,132,1)',  fill: 'rgba(255,99,132,0.12)' }, // red
-      flowActivity:  { line: 'rgba(75,192,192,1)',  fill: 'rgba(75,192,192,0.10)' }, // teal
-      heartRate:     { line: 'rgba(153,102,255,1)', fill: 'rgba(153,102,255,0.10)' },// purple
-      flowIntensity: { line: 'rgba(255,159,64,1)',  fill: 'rgba(255,159,64,0.10)' }  // orange
-    };
-
-    // ---- Helpers ----
-    function parseCSV(text) {
-      const lines = text.trim().split(/\r?\n/);
-      const header = lines.shift().split(',').map(h => h.trim());
-      const rows = lines.map(line => {
-        const parts = line.split(',');
-        const o = {};
-        header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
-        return o;
-      });
-      return { header, rows };
-    }
-    function toNum(v) {
-      if (v === '' || v == null) return null;
-      const s = String(v).trim();
-      if (/^(nan|null|none|undefined)$/i.test(s) || s === '') return null;
-      const n = Number(s);
-      return Number.isFinite(n) ? n : null;
-    }
-    function median(a) {
-      const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
-      const n = vals.length;
-      if (!n) return NaN;
-      return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
-    }
-    function movingAverageCentered(arr, halfWindow) {
-      const n = arr.length, out = new Array(n).fill(null);
-      const prefix = new Array(n + 1).fill(0);
-      const counts = new Array(n + 1).fill(0);
-      for (let i = 0; i < n; i++) {
-        const v = arr[i];
-        const add = Number.isFinite(v) ? v : 0;
-        const cnt = Number.isFinite(v) ? 1 : 0;
-        prefix[i + 1] = prefix[i] + add;
-        counts[i + 1] = counts[i] + cnt;
+    <style>
+      /* Keep this block immune to the big flex rule earlier in your CSS */
+      .discussion #reading-chart-block,
+      .discussion #reading-chart-block *,
+      #reading-chart-block,
+      #reading-chart-block * {
+        display: block !important;
       }
-      for (let i = 0; i < n; i++) {
-        const L = Math.max(0, i - halfWindow);
-        const R = Math.min(n - 1, i + halfWindow);
-        const sum = prefix[R + 1] - prefix[L];
-        const cnt = counts[R + 1] - counts[L];
-        out[i] = cnt > 0 ? sum / cnt : null;
+
+      #reading-chart-block {
+        margin: 1.5rem 0;
+        padding: 1rem 1rem 0.5rem;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        position: relative;
+        isolation: isolate;
+        z-index: 0;
+        clear: both;
       }
-      return out;
-    }
 
-    // ---- Load & prep data ----
-    const resp = await fetch(CSV_PATH);
-    const text = await resp.text();
-    const { rows } = parseCSV(text);
+      #reading-chart-block .chart-title {
+        margin: 0 0 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1.2;
+        color: #222;
+      }
 
-    const tsRaw = rows.map(r => toNum(r.timestamp));
-    const validTs = tsRaw.filter(Number.isFinite);
-    if (!validTs.length) return;
+      #reading-chart-stack {
+        width: 100%;
+        display: grid;
+        grid-template-rows: repeat(5, 1fr);
+        gap: 14px;
+      }
 
-    const t0 = Math.min(...validTs);
-    const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
+      .chart-mini {
+        width: 100%;
+        height: 180px;
+        /* tweak this to taste */
+        position: relative;
+      }
 
-    // Sampling rate -> smoothing window
-    const diffs = [];
-    for (let i = 1; i < tsRaw.length; i++) {
-      const a = tsRaw[i - 1], b = tsRaw[i];
-      if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
-    }
-    const medDiffMs = median(diffs);
-    const samplingRateHz = 1000 / medDiffMs;
-    const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
-    const halfWindow = Math.max(0, Math.floor(windowSize / 2));
+      .chart-mini canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
 
-    // Smooth each series
-    const raw = {
-      hbo:           rows.map(r => toNum(r.hbo)),
-      hbr:           rows.map(r => toNum(r.hbr)),
-      flowActivity:  rows.map(r => toNum(r.flowActivity)),
-      heartRate:     rows.map(r => toNum(r.heartRate)),
-      flowIntensity: rows.map(r => toNum(r.flowIntensity))
-    };
-    const sm = Object.fromEntries(
-      Object.entries(raw).map(([k, v]) => [k, movingAverageCentered(v, halfWindow)])
-    );
+      @media (max-width: 768px) {
+        .chart-mini {
+          height: 150px;
+        }
+      }
 
-    // Build {x, y} and hide first CUT_FIRST_MIN minutes
-    function seriesXY(arr, scale = 1) {
-      return minutes.map((t, i) => {
-        if (!Number.isFinite(t) || t <= CUT_FIRST_MIN) return { x: t, y: null };
-        const y = arr[i];
-        return { x: t, y: (Number.isFinite(y) ? y * scale : null) };
-      });
-    }
+      #reading-chart-block::after {
+        content: "";
+        display: block;
+        height: 1px;
+        margin-top: 1rem;
+      }
+    </style>
 
-    const xMax = Math.max(...minutes.filter(Number.isFinite));
-    const hboScale = 1e15; // show as ×10⁻¹⁵
+    <!-- Chart.js v3 (safe to include even if already on page) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
-    const dataSets = [
-      { id: 'reading_hbo',           label: 'HbO (×10⁻¹⁵)',        color: COLORS.hbo,           data: seriesXY(sm.hbo, hboScale) },
-      { id: 'reading_hbr',           label: 'HbR (×10⁻¹⁵)',        color: COLORS.hbr,           data: seriesXY(sm.hbr, hboScale) },
-      { id: 'reading_flowActivity',  label: 'flowActivity',         color: COLORS.flowActivity,  data: seriesXY(sm.flowActivity, 1) },
-      { id: 'reading_heartRate',     label: 'heartRate',            color: COLORS.heartRate,     data: seriesXY(sm.heartRate, 1) },
-      { id: 'reading_flowIntensity', label: 'flowIntensity',        color: COLORS.flowIntensity, data: seriesXY(sm.flowIntensity, 1) }
-    ];
+    <script>
+      (async function () {
+        // ---- Config ----
+        const CSV_PATH = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
+        const WINDOW_SECONDS = 5;
+        const CUT_FIRST_MIN = 0.5; // minutes
 
-    function rangeOf(points) {
-      const ys = points.map(p => p.y).filter(v => v != null);
-      if (!ys.length) return { min: 0, max: 1 };
-      const min = Math.min(...ys), max = Math.max(...ys);
-      if (min === max) return { min: min - 1, max: max + 1 };
-      return { min, max };
-    }
+        // Colors
+        const COLORS = {
+          hbo: { line: 'rgba(54,162,235,1)', fill: 'rgba(54,162,235,0.12)' }, // blue
+          hbr: { line: 'rgba(255,99,132,1)', fill: 'rgba(255,99,132,0.12)' }, // red
+          flowActivity: { line: 'rgba(75,192,192,1)', fill: 'rgba(75,192,192,0.10)' }, // teal
+          heartRate: { line: 'rgba(153,102,255,1)', fill: 'rgba(153,102,255,0.10)' },// purple
+          flowIntensity: { line: 'rgba(255,159,64,1)', fill: 'rgba(255,159,64,0.10)' }  // orange
+        };
 
-    function makeChart(canvasId, label, colorCfg, pts) {
-      const r = rangeOf(pts);
-      const ctx = document.getElementById(canvasId).getContext('2d');
-      return new Chart(ctx, {
-        type: 'line',
-        data: {
-          datasets: [{
-            label,
-            data: pts,               // [{x, y}]
-            parsing: false,
-            borderColor: colorCfg.line,
-            backgroundColor: colorCfg.fill,
-            pointRadius: 0,
-            tension: 0.3,
-            spanGaps: false,
-            fill: false
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: false,
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: label, align: 'start', color: '#222', font: { size: 12 } },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: {
-                label: (ctx) => `${label}: ${Number.isFinite(ctx.parsed.y) ? ctx.parsed.y.toFixed(3) : '—'}`
+        // ---- Helpers ----
+        function parseCSV(text) {
+          const lines = text.trim().split(/\r?\n/);
+          const header = lines.shift().split(',').map(h => h.trim());
+          const rows = lines.map(line => {
+            const parts = line.split(',');
+            const o = {};
+            header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
+            return o;
+          });
+          return { header, rows };
+        }
+        function toNum(v) {
+          if (v === '' || v == null) return null;
+          const s = String(v).trim();
+          if (/^(nan|null|none|undefined)$/i.test(s) || s === '') return null;
+          const n = Number(s);
+          return Number.isFinite(n) ? n : null;
+        }
+        function median(a) {
+          const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
+          const n = vals.length;
+          if (!n) return NaN;
+          return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+        }
+        function movingAverageCentered(arr, halfWindow) {
+          const n = arr.length, out = new Array(n).fill(null);
+          const prefix = new Array(n + 1).fill(0);
+          const counts = new Array(n + 1).fill(0);
+          for (let i = 0; i < n; i++) {
+            const v = arr[i];
+            const add = Number.isFinite(v) ? v : 0;
+            const cnt = Number.isFinite(v) ? 1 : 0;
+            prefix[i + 1] = prefix[i] + add;
+            counts[i + 1] = counts[i] + cnt;
+          }
+          for (let i = 0; i < n; i++) {
+            const L = Math.max(0, i - halfWindow);
+            const R = Math.min(n - 1, i + halfWindow);
+            const sum = prefix[R + 1] - prefix[L];
+            const cnt = counts[R + 1] - counts[L];
+            out[i] = cnt > 0 ? sum / cnt : null;
+          }
+          return out;
+        }
+
+        // ---- Load & prep data ----
+        const resp = await fetch(CSV_PATH);
+        const text = await resp.text();
+        const { rows } = parseCSV(text);
+
+        const tsRaw = rows.map(r => toNum(r.timestamp));
+        const validTs = tsRaw.filter(Number.isFinite);
+        if (!validTs.length) return;
+
+        const t0 = Math.min(...validTs);
+        const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
+
+        // Sampling rate -> smoothing window
+        const diffs = [];
+        for (let i = 1; i < tsRaw.length; i++) {
+          const a = tsRaw[i - 1], b = tsRaw[i];
+          if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
+        }
+        const medDiffMs = median(diffs);
+        const samplingRateHz = 1000 / medDiffMs;
+        const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
+        const halfWindow = Math.max(0, Math.floor(windowSize / 2));
+
+        // Smooth each series
+        const raw = {
+          hbo: rows.map(r => toNum(r.hbo)),
+          hbr: rows.map(r => toNum(r.hbr)),
+          flowActivity: rows.map(r => toNum(r.flowActivity)),
+          heartRate: rows.map(r => toNum(r.heartRate)),
+          flowIntensity: rows.map(r => toNum(r.flowIntensity))
+        };
+        const sm = Object.fromEntries(
+          Object.entries(raw).map(([k, v]) => [k, movingAverageCentered(v, halfWindow)])
+        );
+
+        // Build {x, y} and hide first CUT_FIRST_MIN minutes
+        function seriesXY(arr, scale = 1) {
+          return minutes.map((t, i) => {
+            if (!Number.isFinite(t) || t <= CUT_FIRST_MIN) return { x: t, y: null };
+            const y = arr[i];
+            return { x: t, y: (Number.isFinite(y) ? y * scale : null) };
+          });
+        }
+
+        const xMax = Math.max(...minutes.filter(Number.isFinite));
+        const hboScale = 1e15; // show as ×10⁻¹⁵
+
+        const dataSets = [
+          { id: 'reading_hbo', label: 'HbO (×10⁻¹⁵)', color: COLORS.hbo, data: seriesXY(sm.hbo, hboScale) },
+          { id: 'reading_hbr', label: 'HbR (×10⁻¹⁵)', color: COLORS.hbr, data: seriesXY(sm.hbr, hboScale) },
+          { id: 'reading_flowActivity', label: 'flowActivity', color: COLORS.flowActivity, data: seriesXY(sm.flowActivity, 1) },
+          { id: 'reading_heartRate', label: 'heartRate', color: COLORS.heartRate, data: seriesXY(sm.heartRate, 1) },
+          { id: 'reading_flowIntensity', label: 'flowIntensity', color: COLORS.flowIntensity, data: seriesXY(sm.flowIntensity, 1) }
+        ];
+
+        function rangeOf(points) {
+          const ys = points.map(p => p.y).filter(v => v != null);
+          if (!ys.length) return { min: 0, max: 1 };
+          const min = Math.min(...ys), max = Math.max(...ys);
+          if (min === max) return { min: min - 1, max: max + 1 };
+          return { min, max };
+        }
+
+        function makeChart(canvasId, label, colorCfg, pts) {
+          const r = rangeOf(pts);
+          const ctx = document.getElementById(canvasId).getContext('2d');
+          return new Chart(ctx, {
+            type: 'line',
+            data: {
+              datasets: [{
+                label,
+                data: pts,               // [{x, y}]
+                parsing: false,
+                borderColor: colorCfg.line,
+                backgroundColor: colorCfg.fill,
+                pointRadius: 0,
+                tension: 0.3,
+                spanGaps: false,
+                fill: false
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: false,
+              plugins: {
+                legend: { display: false },
+                title: { display: true, text: label, align: 'start', color: '#222', font: { size: 12 } },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  callbacks: {
+                    label: (ctx) => `${label}: ${Number.isFinite(ctx.parsed.y) ? ctx.parsed.y.toFixed(3) : '—'}`
+                  }
+                }
+              },
+              interaction: { mode: 'index', intersect: false },
+              scales: {
+                x: {
+                  type: 'linear',
+                  title: { display: true, text: 'Time (Minutes)' },
+                  min: 0,
+                  max: xMax,
+                  grid: { display: true },
+                  ticks: { stepSize: 0.25 }
+                },
+                y: {
+                  title: { display: false },
+                  min: r.min,
+                  max: r.max,
+                  ticks: { callback: v => Number(v).toFixed(2) }
+                }
               }
             }
-          },
-          interaction: { mode: 'index', intersect: false },
-          scales: {
-            x: {
-              type: 'linear',
-              title: { display: true, text: 'Time (Minutes)' },
-              min: 0,
-              max: xMax,
-              grid: { display: true },
-              ticks: { stepSize: 0.25 }
-            },
-            y: {
-              title: { display: false },
-              min: r.min,
-              max: r.max,
-              ticks: { callback: v => Number(v).toFixed(2) }
-            }
-          }
+          });
         }
-      });
-    }
 
-    dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
-  })();
-</script>
-<!-- END: Reading & Note-Taking — five separate Chart.js graphs -->
+        dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
+      })();
+    </script>
+    <!-- END: Reading & Note-Taking — five separate Chart.js graphs -->
 
 
 
@@ -827,261 +897,265 @@
     </p>
 
     <!-- BEGIN: Pattern Game — five separate Chart.js graphs -->
-<section id="pattern-chart-block" class="chart-block no-flex-scope">
-  <h2 class="chart-title">Smoothed Optical Data From Pattern Game Session</h2>
+    <section id="pattern-chart-block" class="chart-block no-flex-scope">
+      <h2 class="chart-title">Smoothed Optical Data From Pattern Game Session</h2>
 
-  <div id="pattern-chart-stack">
-    <div class="chart-mini"><canvas id="pattern_hbo"></canvas></div>
-    <div class="chart-mini"><canvas id="pattern_hbr"></canvas></div>
-    <div class="chart-mini"><canvas id="pattern_flowActivity"></canvas></div>
-    <div class="chart-mini"><canvas id="pattern_heartRate"></canvas></div>
-    <div class="chart-mini"><canvas id="pattern_flowIntensity"></canvas></div>
-  </div>
-</section>
+      <div id="pattern-chart-stack">
+        <div class="chart-mini"><canvas id="pattern_hbo"></canvas></div>
+        <div class="chart-mini"><canvas id="pattern_hbr"></canvas></div>
+        <div class="chart-mini"><canvas id="pattern_flowActivity"></canvas></div>
+        <div class="chart-mini"><canvas id="pattern_heartRate"></canvas></div>
+        <div class="chart-mini"><canvas id="pattern_flowIntensity"></canvas></div>
+      </div>
+    </section>
 
-<style>
-  /* Keep this block immune to the broad flex rule in .discussion div */
-  .discussion #pattern-chart-block,
-  .discussion #pattern-chart-block *,
-  #pattern-chart-block,
-  #pattern-chart-block * {
-    display: block !important;
-  }
-
-  #pattern-chart-block {
-    margin: 1.5rem 0;
-    padding: 1rem 1rem 0.5rem;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    position: relative;
-    isolation: isolate;
-    z-index: 0;
-    clear: both;
-  }
-
-  #pattern-chart-block .chart-title {
-    margin: 0 0 0.75rem;
-    font-size: 1.25rem;
-    line-height: 1.2;
-    color: #222;
-  }
-
-  #pattern-chart-stack {
-    width: 100%;
-    display: grid;
-    grid-template-rows: repeat(5, 1fr);
-    gap: 14px;
-  }
-
-  .chart-mini {
-    width: 100%;
-    height: 180px; /* adjust height as needed */
-    position: relative;
-  }
-  .chart-mini canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  @media (max-width: 768px) {
-    .chart-mini { height: 150px; }
-  }
-
-  #pattern-chart-block::after {
-    content: "";
-    display: block;
-    height: 1px;
-    margin-top: 1rem;
-  }
-</style>
-
-<!-- Chart.js v3 (safe if included elsewhere too) -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
-<script>
-  (async function () {
-    // ---- Config ----
-    const CSV_PATH = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
-    const WINDOW_SECONDS = 5;
-    const CUT_FIRST_MIN = 0.5; // minutes
-
-    // Colors to match your palette
-    const COLORS = {
-      hbo:           { line: 'rgba(54,162,235,1)',  fill: 'rgba(54,162,235,0.12)' }, // blue
-      hbr:           { line: 'rgba(255,99,132,1)',  fill: 'rgba(255,99,132,0.12)' }, // red
-      flowActivity:  { line: 'rgba(75,192,192,1)',  fill: 'rgba(75,192,192,0.10)' }, // teal
-      heartRate:     { line: 'rgba(153,102,255,1)', fill: 'rgba(153,102,255,0.10)' },// purple
-      flowIntensity: { line: 'rgba(255,159,64,1)',  fill: 'rgba(255,159,64,0.10)' }  // orange
-    };
-
-    // ---- Helpers ----
-    function parseCSV(text) {
-      const lines = text.trim().split(/\r?\n/);
-      const header = lines.shift().split(',').map(h => h.trim());
-      const rows = lines.map(line => {
-        const parts = line.split(',');
-        const o = {};
-        header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
-        return o;
-      });
-      return { header, rows };
-    }
-    function toNum(v) {
-      if (v === '' || v == null) return null;
-      const s = String(v).trim();
-      if (/^(nan|null|none|undefined)$/i.test(s) || s === '') return null;
-      const n = Number(s);
-      return Number.isFinite(n) ? n : null;
-    }
-    function median(a) {
-      const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
-      const n = vals.length;
-      if (!n) return NaN;
-      return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
-    }
-    function movingAverageCentered(arr, halfWindow) {
-      const n = arr.length, out = new Array(n).fill(null);
-      const prefix = new Array(n + 1).fill(0);
-      const counts = new Array(n + 1).fill(0);
-      for (let i = 0; i < n; i++) {
-        const v = arr[i];
-        const add = Number.isFinite(v) ? v : 0;
-        const cnt = Number.isFinite(v) ? 1 : 0;
-        prefix[i + 1] = prefix[i] + add;
-        counts[i + 1] = counts[i] + cnt;
+    <style>
+      /* Keep this block immune to the broad flex rule in .discussion div */
+      .discussion #pattern-chart-block,
+      .discussion #pattern-chart-block *,
+      #pattern-chart-block,
+      #pattern-chart-block * {
+        display: block !important;
       }
-      for (let i = 0; i < n; i++) {
-        const L = Math.max(0, i - halfWindow);
-        const R = Math.min(n - 1, i + halfWindow);
-        const sum = prefix[R + 1] - prefix[L];
-        const cnt = counts[R + 1] - counts[L];
-        out[i] = cnt > 0 ? sum / cnt : null;
+
+      #pattern-chart-block {
+        margin: 1.5rem 0;
+        padding: 1rem 1rem 0.5rem;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        position: relative;
+        isolation: isolate;
+        z-index: 0;
+        clear: both;
       }
-      return out;
-    }
 
-    // ---- Load & prep data ----
-    const resp = await fetch(CSV_PATH);
-    const text = await resp.text();
-    const { rows } = parseCSV(text);
+      #pattern-chart-block .chart-title {
+        margin: 0 0 0.75rem;
+        font-size: 1.25rem;
+        line-height: 1.2;
+        color: #222;
+      }
 
-    const tsRaw = rows.map(r => toNum(r.timestamp));
-    const validTs = tsRaw.filter(Number.isFinite);
-    if (!validTs.length) return;
+      #pattern-chart-stack {
+        width: 100%;
+        display: grid;
+        grid-template-rows: repeat(5, 1fr);
+        gap: 14px;
+      }
 
-    const t0 = Math.min(...validTs);
-    const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
+      .chart-mini {
+        width: 100%;
+        height: 180px;
+        /* adjust height as needed */
+        position: relative;
+      }
 
-    // Sampling rate -> smoothing window
-    const diffs = [];
-    for (let i = 1; i < tsRaw.length; i++) {
-      const a = tsRaw[i - 1], b = tsRaw[i];
-      if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
-    }
-    const medDiffMs = median(diffs);
-    const samplingRateHz = 1000 / medDiffMs;
-    const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
-    const halfWindow = Math.max(0, Math.floor(windowSize / 2));
+      .chart-mini canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
 
-    // Smooth each series
-    const raw = {
-      hbo:           rows.map(r => toNum(r.hbo)),
-      hbr:           rows.map(r => toNum(r.hbr)),
-      flowActivity:  rows.map(r => toNum(r.flowActivity)),
-      heartRate:     rows.map(r => toNum(r.heartRate)),
-      flowIntensity: rows.map(r => toNum(r.flowIntensity))
-    };
-    const sm = Object.fromEntries(
-      Object.entries(raw).map(([k, v]) => [k, movingAverageCentered(v, halfWindow)])
-    );
+      @media (max-width: 768px) {
+        .chart-mini {
+          height: 150px;
+        }
+      }
 
-    // Build {x, y} and hide first CUT_FIRST_MIN minutes
-    function seriesXY(arr, scale = 1) {
-      return minutes.map((t, i) => {
-        if (!Number.isFinite(t) || t <= CUT_FIRST_MIN) return { x: t, y: null };
-        const y = arr[i];
-        return { x: t, y: (Number.isFinite(y) ? y * scale : null) };
-      });
-    }
+      #pattern-chart-block::after {
+        content: "";
+        display: block;
+        height: 1px;
+        margin-top: 1rem;
+      }
+    </style>
 
-    const xMax = Math.max(...minutes.filter(Number.isFinite));
-    const hboScale = 1e15; // show HbO/HbR as ×10⁻¹⁵
+    <!-- Chart.js v3 (safe if included elsewhere too) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
-    const dataSets = [
-      { id: 'pattern_hbo',           label: 'HbO (×10⁻¹⁵)',        color: COLORS.hbo,           data: seriesXY(sm.hbo, hboScale) },
-      { id: 'pattern_hbr',           label: 'HbR (×10⁻¹⁵)',        color: COLORS.hbr,           data: seriesXY(sm.hbr, hboScale) },
-      { id: 'pattern_flowActivity',  label: 'flowActivity',         color: COLORS.flowActivity,  data: seriesXY(sm.flowActivity, 1) },
-      { id: 'pattern_heartRate',     label: 'heartRate',            color: COLORS.heartRate,     data: seriesXY(sm.heartRate, 1) },
-      { id: 'pattern_flowIntensity', label: 'flowIntensity',        color: COLORS.flowIntensity, data: seriesXY(sm.flowIntensity, 1) }
-    ];
+    <script>
+      (async function () {
+        // ---- Config ----
+        const CSV_PATH = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
+        const WINDOW_SECONDS = 5;
+        const CUT_FIRST_MIN = 0.5; // minutes
 
-    function rangeOf(points) {
-      const ys = points.map(p => p.y).filter(v => v != null);
-      if (!ys.length) return { min: 0, max: 1 };
-      const min = Math.min(...ys), max = Math.max(...ys);
-      if (min === max) return { min: min - 1, max: max + 1 };
-      return { min, max };
-    }
+        // Colors to match your palette
+        const COLORS = {
+          hbo: { line: 'rgba(54,162,235,1)', fill: 'rgba(54,162,235,0.12)' }, // blue
+          hbr: { line: 'rgba(255,99,132,1)', fill: 'rgba(255,99,132,0.12)' }, // red
+          flowActivity: { line: 'rgba(75,192,192,1)', fill: 'rgba(75,192,192,0.10)' }, // teal
+          heartRate: { line: 'rgba(153,102,255,1)', fill: 'rgba(153,102,255,0.10)' },// purple
+          flowIntensity: { line: 'rgba(255,159,64,1)', fill: 'rgba(255,159,64,0.10)' }  // orange
+        };
 
-    function makeChart(canvasId, label, colorCfg, pts) {
-      const r = rangeOf(pts);
-      const ctx = document.getElementById(canvasId).getContext('2d');
-      return new Chart(ctx, {
-        type: 'line',
-        data: {
-          datasets: [{
-            label,
-            data: pts,               // [{x, y}]
-            parsing: false,
-            borderColor: colorCfg.line,
-            backgroundColor: colorCfg.fill,
-            pointRadius: 0,
-            tension: 0.3,
-            spanGaps: false,
-            fill: false
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: false,
-          plugins: {
-            legend: { display: false },
-            title: { display: true, text: label, align: 'start', color: '#222', font: { size: 12 } },
-            tooltip: {
-              mode: 'index',
-              intersect: false,
-              callbacks: {
-                label: (ctx) => `${label}: ${Number.isFinite(ctx.parsed.y) ? ctx.parsed.y.toFixed(3) : '—'}`
+        // ---- Helpers ----
+        function parseCSV(text) {
+          const lines = text.trim().split(/\r?\n/);
+          const header = lines.shift().split(',').map(h => h.trim());
+          const rows = lines.map(line => {
+            const parts = line.split(',');
+            const o = {};
+            header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
+            return o;
+          });
+          return { header, rows };
+        }
+        function toNum(v) {
+          if (v === '' || v == null) return null;
+          const s = String(v).trim();
+          if (/^(nan|null|none|undefined)$/i.test(s) || s === '') return null;
+          const n = Number(s);
+          return Number.isFinite(n) ? n : null;
+        }
+        function median(a) {
+          const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
+          const n = vals.length;
+          if (!n) return NaN;
+          return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+        }
+        function movingAverageCentered(arr, halfWindow) {
+          const n = arr.length, out = new Array(n).fill(null);
+          const prefix = new Array(n + 1).fill(0);
+          const counts = new Array(n + 1).fill(0);
+          for (let i = 0; i < n; i++) {
+            const v = arr[i];
+            const add = Number.isFinite(v) ? v : 0;
+            const cnt = Number.isFinite(v) ? 1 : 0;
+            prefix[i + 1] = prefix[i] + add;
+            counts[i + 1] = counts[i] + cnt;
+          }
+          for (let i = 0; i < n; i++) {
+            const L = Math.max(0, i - halfWindow);
+            const R = Math.min(n - 1, i + halfWindow);
+            const sum = prefix[R + 1] - prefix[L];
+            const cnt = counts[R + 1] - counts[L];
+            out[i] = cnt > 0 ? sum / cnt : null;
+          }
+          return out;
+        }
+
+        // ---- Load & prep data ----
+        const resp = await fetch(CSV_PATH);
+        const text = await resp.text();
+        const { rows } = parseCSV(text);
+
+        const tsRaw = rows.map(r => toNum(r.timestamp));
+        const validTs = tsRaw.filter(Number.isFinite);
+        if (!validTs.length) return;
+
+        const t0 = Math.min(...validTs);
+        const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
+
+        // Sampling rate -> smoothing window
+        const diffs = [];
+        for (let i = 1; i < tsRaw.length; i++) {
+          const a = tsRaw[i - 1], b = tsRaw[i];
+          if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
+        }
+        const medDiffMs = median(diffs);
+        const samplingRateHz = 1000 / medDiffMs;
+        const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
+        const halfWindow = Math.max(0, Math.floor(windowSize / 2));
+
+        // Smooth each series
+        const raw = {
+          hbo: rows.map(r => toNum(r.hbo)),
+          hbr: rows.map(r => toNum(r.hbr)),
+          flowActivity: rows.map(r => toNum(r.flowActivity)),
+          heartRate: rows.map(r => toNum(r.heartRate)),
+          flowIntensity: rows.map(r => toNum(r.flowIntensity))
+        };
+        const sm = Object.fromEntries(
+          Object.entries(raw).map(([k, v]) => [k, movingAverageCentered(v, halfWindow)])
+        );
+
+        // Build {x, y} and hide first CUT_FIRST_MIN minutes
+        function seriesXY(arr, scale = 1) {
+          return minutes.map((t, i) => {
+            if (!Number.isFinite(t) || t <= CUT_FIRST_MIN) return { x: t, y: null };
+            const y = arr[i];
+            return { x: t, y: (Number.isFinite(y) ? y * scale : null) };
+          });
+        }
+
+        const xMax = Math.max(...minutes.filter(Number.isFinite));
+        const hboScale = 1e15; // show HbO/HbR as ×10⁻¹⁵
+
+        const dataSets = [
+          { id: 'pattern_hbo', label: 'HbO (×10⁻¹⁵)', color: COLORS.hbo, data: seriesXY(sm.hbo, hboScale) },
+          { id: 'pattern_hbr', label: 'HbR (×10⁻¹⁵)', color: COLORS.hbr, data: seriesXY(sm.hbr, hboScale) },
+          { id: 'pattern_flowActivity', label: 'flowActivity', color: COLORS.flowActivity, data: seriesXY(sm.flowActivity, 1) },
+          { id: 'pattern_heartRate', label: 'heartRate', color: COLORS.heartRate, data: seriesXY(sm.heartRate, 1) },
+          { id: 'pattern_flowIntensity', label: 'flowIntensity', color: COLORS.flowIntensity, data: seriesXY(sm.flowIntensity, 1) }
+        ];
+
+        function rangeOf(points) {
+          const ys = points.map(p => p.y).filter(v => v != null);
+          if (!ys.length) return { min: 0, max: 1 };
+          const min = Math.min(...ys), max = Math.max(...ys);
+          if (min === max) return { min: min - 1, max: max + 1 };
+          return { min, max };
+        }
+
+        function makeChart(canvasId, label, colorCfg, pts) {
+          const r = rangeOf(pts);
+          const ctx = document.getElementById(canvasId).getContext('2d');
+          return new Chart(ctx, {
+            type: 'line',
+            data: {
+              datasets: [{
+                label,
+                data: pts,               // [{x, y}]
+                parsing: false,
+                borderColor: colorCfg.line,
+                backgroundColor: colorCfg.fill,
+                pointRadius: 0,
+                tension: 0.3,
+                spanGaps: false,
+                fill: false
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: false,
+              plugins: {
+                legend: { display: false },
+                title: { display: true, text: label, align: 'start', color: '#222', font: { size: 12 } },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  callbacks: {
+                    label: (ctx) => `${label}: ${Number.isFinite(ctx.parsed.y) ? ctx.parsed.y.toFixed(3) : '—'}`
+                  }
+                }
+              },
+              interaction: { mode: 'index', intersect: false },
+              scales: {
+                x: {
+                  type: 'linear',
+                  title: { display: true, text: 'Time (Minutes)' },
+                  min: 0,
+                  max: xMax,
+                  grid: { display: true },
+                  ticks: { stepSize: 0.25 }
+                },
+                y: {
+                  title: { display: false },
+                  min: r.min,
+                  max: r.max,
+                  ticks: { callback: v => Number(v).toFixed(2) }
+                }
               }
             }
-          },
-          interaction: { mode: 'index', intersect: false },
-          scales: {
-            x: {
-              type: 'linear',
-              title: { display: true, text: 'Time (Minutes)' },
-              min: 0,
-              max: xMax,
-              grid: { display: true },
-              ticks: { stepSize: 0.25 }
-            },
-            y: {
-              title: { display: false },
-              min: r.min,
-              max: r.max,
-              ticks: { callback: v => Number(v).toFixed(2) }
-            }
-          }
+          });
         }
-      });
-    }
 
-    dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
-  })();
-</script>
-<!-- END: Pattern Game — five separate Chart.js graphs -->
+        dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
+      })();
+    </script>
+    <!-- END: Pattern Game — five separate Chart.js graphs -->
 
 
     <div class="timeline" id="timeline2"></div>
@@ -1384,50 +1458,53 @@
       These are some mock images of what the app would show and track.
     </p>
     <div class="story-row">
-  <div class="story-media">
-    <img src="images/study jd.png" alt="student">
-  </div>
-  <div class="story-copy">
-    <span class="story-eyebrow">Student use</span>
-    <h3>See when you’re most focused</h3>
-    <p>
-      Track HbO and other brain signals during study or homework sessions to discover your peak focus windows. Plan your study and homework sessions accordingly. 
-    </p>
-  </div>
-</div>
+      <div class="story-media">
+        <img src="images/study jd.png" alt="student">
+      </div>
+      <div class="story-copy">
+        <span class="story-eyebrow">Student use</span>
+        <h3>See when you’re most focused</h3>
+        <p>
+          Track HbO and other brain signals during study or homework sessions to discover your peak focus windows. Plan
+          your study and homework sessions accordingly.
+        </p>
+      </div>
+    </div>
 
-<div class="story-row reverse">
-  <div class="story-media">
-    <img src="images/tennisjd.png" alt="tennis">
-  </div>
-  <div class="story-copy">
-    <span class="story-eyebrow">Athlete use</span>
-    <h3>Train for high-pressure points</h3>
-    <p>
-      Identify which moments (deuce, break points, tiebreaks) drive peaks in stress or focus. Use those insights to help build your practice plan. 
-    </p>
-  </div>
-</div>
+    <div class="story-row reverse">
+      <div class="story-media">
+        <img src="images/tennisjd.png" alt="tennis">
+      </div>
+      <div class="story-copy">
+        <span class="story-eyebrow">Athlete use</span>
+        <h3>Train for high-pressure points</h3>
+        <p>
+          Identify which moments (deuce, break points, tiebreaks) drive peaks in stress or focus. Use those insights to
+          help build your practice plan.
+        </p>
+      </div>
+    </div>
 
-<div class="story-row">
-  <div class="story-media">
-    <img src="images/mockapp.png" alt="mockapp">
-  </div>
-  <div class="story-copy">
-    <span class="story-eyebrow">Daily insights</span>
-    <h3>Your brain data, made useful</h3>
-    <p>
-       Identify what times your brain is the most active and productive through a dashboard displaying weekly trends, and use that to help build your daily schedule. 
-    </p>
-  </div>
-</div>
+    <div class="story-row">
+      <div class="story-media">
+        <img src="images/mockapp.png" alt="mockapp">
+      </div>
+      <div class="story-copy">
+        <span class="story-eyebrow">Daily insights</span>
+        <h3>Your brain data, made useful</h3>
+        <p>
+          Identify what times your brain is the most active and productive through a dashboard displaying weekly trends,
+          and use that to help build your daily schedule.
+        </p>
+      </div>
+    </div>
 
     <p>
 
     </p>
     <p style="font-style: italic; font-family: 'Georgia', serif; font-size: 1.1em;">
       Note: We used ChatGPT to provide the rough structure of the code and also the conversion of the units
-      (milliseconds to minutes with intervals in between). We also used it to generate some of the images. 
+      (milliseconds to minutes with intervals in between). We also used it to generate some of the images.
     </p>
   </div>
 
