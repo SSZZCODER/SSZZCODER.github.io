@@ -181,7 +181,6 @@
       opacity: 1;
     }
 
-    /* Track */
     .timeline {
       position: relative;
       width: 100%;
@@ -190,12 +189,10 @@
       border-radius: 2px;
       margin: 1em 0;
 
-      /* allow big tooltips + raise layer */
       overflow: visible;
       z-index: 9990;
     }
 
-    /* Ticks (unchanged) */
     .tick-major,
     .tick-minor {
       position: absolute;
@@ -222,7 +219,6 @@
       top: -2px;
     }
 
-    /* Dot */
     .dot {
       position: absolute;
       top: 50%;
@@ -233,35 +229,28 @@
       transform: translate(-50%, -50%);
       cursor: pointer;
       z-index: 9991;
-      /* above track */
     }
 
-    /* Tooltip (CSS-only solution) */
     .dot .tooltip {
       position: absolute;
-      /* place ABOVE the dot */
       bottom: calc(100% + 8px);
       left: 50%;
       transform: translateX(-50%);
 
-      /* on top + hidden by default */
       z-index: 9999;
       visibility: hidden;
       opacity: 0;
       transition: opacity .2s;
       pointer-events: none;
 
-      /* big, but never wider than the viewport */
       max-width: min(92vw, 720px);
     }
 
-    /* show on hover */
     .dot:hover .tooltip {
       visibility: visible;
       opacity: 1;
     }
 
-    /* Image scales to tooltip box */
     .dot .tooltip img {
       width: 100%;
       height: auto;
@@ -270,7 +259,6 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
     }
 
-    /* Optional: slightly smaller on very small screens */
     @media (max-width: 480px) {
       .dot .tooltip {
         max-width: min(94vw, 560px);
@@ -381,7 +369,6 @@
     }
   </style>
 
-  <!-- Chart.js DataLabels plugin (for the bar labels) -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 
@@ -416,7 +403,6 @@
 
   <div class="discussion">
     <h2>Discussion</h2>
-    <!-- BEGIN: Reading & Note-Taking — five separate Chart.js graphs -->
     <section id="reading-chart-block" class="chart-block no-flex-scope">
       <h2 class="chart-title">Smoothed Optical Data From Reading and Note-Taking Session</h2>
 
@@ -430,7 +416,6 @@
     </section>
 
     <style>
-      /* Keep this block immune to the big flex rule earlier in your CSS */
       .discussion #reading-chart-block,
       .discussion #reading-chart-block *,
       #reading-chart-block,
@@ -467,7 +452,6 @@
       .chart-mini {
         width: 100%;
         height: 180px;
-        /* tweak this to taste */
         position: relative;
       }
 
@@ -490,17 +474,14 @@
       }
     </style>
 
-    <!-- Chart.js v3 (safe to include even if already on page) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
     <script>
       (async function () {
-        // ---- Config ----
         const CSV_PATH = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
         const WINDOW_SECONDS = 5;
-        const CUT_FIRST_MIN = 0.5; // minutes
+        const CUT_FIRST_MIN = 0.5; 
 
-        // Colors
         const COLORS = {
           hbo: { line: 'rgba(54,162,235,1)', fill: 'rgba(54,162,235,0.12)' }, // blue
           hbr: { line: 'rgba(255,99,132,1)', fill: 'rgba(255,99,132,0.12)' }, // red
@@ -509,7 +490,6 @@
           flowIntensity: { line: 'rgba(255,159,64,1)', fill: 'rgba(255,159,64,0.10)' }  // orange
         };
 
-        // ---- Helpers ----
         function parseCSV(text) {
           const lines = text.trim().split(/\r?\n/);
           const header = lines.shift().split(',').map(h => h.trim());
@@ -555,7 +535,6 @@
           return out;
         }
 
-        // ---- Load & prep data ----
         const resp = await fetch(CSV_PATH);
         const text = await resp.text();
         const { rows } = parseCSV(text);
@@ -567,7 +546,6 @@
         const t0 = Math.min(...validTs);
         const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
 
-        // Sampling rate -> smoothing window
         const diffs = [];
         for (let i = 1; i < tsRaw.length; i++) {
           const a = tsRaw[i - 1], b = tsRaw[i];
@@ -578,7 +556,6 @@
         const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
         const halfWindow = Math.max(0, Math.floor(windowSize / 2));
 
-        // Smooth each series
         const raw = {
           hbo: rows.map(r => toNum(r.hbo)),
           hbr: rows.map(r => toNum(r.hbr)),
@@ -590,7 +567,6 @@
           Object.entries(raw).map(([k, v]) => [k, movingAverageCentered(v, halfWindow)])
         );
 
-        // Build {x, y} and hide first CUT_FIRST_MIN minutes
         function seriesXY(arr, scale = 1) {
           return minutes.map((t, i) => {
             if (!Number.isFinite(t) || t <= CUT_FIRST_MIN) return { x: t, y: null };
@@ -600,7 +576,7 @@
         }
 
         const xMax = Math.max(...minutes.filter(Number.isFinite));
-        const hboScale = 1e15; // show as ×10⁻¹⁵
+        const hboScale = 1e15; 
 
         const dataSets = [
           { id: 'reading_hbo', label: 'HbO (×10⁻¹⁵)', color: COLORS.hbo, data: seriesXY(sm.hbo, hboScale) },
@@ -626,7 +602,7 @@
             data: {
               datasets: [{
                 label,
-                data: pts,               // [{x, y}]
+                data: pts,              
                 parsing: false,
                 borderColor: colorCfg.line,
                 backgroundColor: colorCfg.fill,
@@ -675,7 +651,6 @@
         dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
       })();
     </script>
-    <!-- END: Reading & Note-Taking — five separate Chart.js graphs -->
 
 
 
@@ -817,7 +792,7 @@
                 fill: true,
                 tension: 0.3,
                 pointRadius: 2,
-                spanGaps: false   // ensures the gap is not connected
+                spanGaps: false 
               }]
             },
 
@@ -867,7 +842,6 @@
 
           const hF = await fetchAndSmooth(csvB, 'hbo', 0, Infinity);
 
-          // hide values for first 0.50 minutes but keep timestamps
           const cutoffMin = 0.50;
           const labelsF = hF.labels;
           const valuesF = hF.values.map((v, i) =>
@@ -899,7 +873,6 @@
       playing a pattern recognition game.
     </p>
 
-    <!-- BEGIN: Pattern Game — five separate Chart.js graphs -->
     <section id="pattern-chart-block" class="chart-block no-flex-scope">
       <h2 class="chart-title">Smoothed Optical Data From Pattern Game Session</h2>
 
@@ -913,7 +886,6 @@
     </section>
 
     <style>
-      /* Keep this block immune to the broad flex rule in .discussion div */
       .discussion #pattern-chart-block,
       .discussion #pattern-chart-block *,
       #pattern-chart-block,
@@ -950,7 +922,6 @@
       .chart-mini {
         width: 100%;
         height: 180px;
-        /* adjust height as needed */
         position: relative;
       }
 
@@ -973,17 +944,14 @@
       }
     </style>
 
-    <!-- Chart.js v3 (safe if included elsewhere too) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
     <script>
       (async function () {
-        // ---- Config ----
         const CSV_PATH = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
         const WINDOW_SECONDS = 5;
-        const CUT_FIRST_MIN = 0.5; // minutes
+        const CUT_FIRST_MIN = 0.5; 
 
-        // Colors to match your palette
         const COLORS = {
           hbo: { line: 'rgba(54,162,235,1)', fill: 'rgba(54,162,235,0.12)' }, // blue
           hbr: { line: 'rgba(255,99,132,1)', fill: 'rgba(255,99,132,0.12)' }, // red
@@ -992,7 +960,6 @@
           flowIntensity: { line: 'rgba(255,159,64,1)', fill: 'rgba(255,159,64,0.10)' }  // orange
         };
 
-        // ---- Helpers ----
         function parseCSV(text) {
           const lines = text.trim().split(/\r?\n/);
           const header = lines.shift().split(',').map(h => h.trim());
@@ -1038,7 +1005,6 @@
           return out;
         }
 
-        // ---- Load & prep data ----
         const resp = await fetch(CSV_PATH);
         const text = await resp.text();
         const { rows } = parseCSV(text);
@@ -1050,7 +1016,6 @@
         const t0 = Math.min(...validTs);
         const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
 
-        // Sampling rate -> smoothing window
         const diffs = [];
         for (let i = 1; i < tsRaw.length; i++) {
           const a = tsRaw[i - 1], b = tsRaw[i];
@@ -1061,7 +1026,6 @@
         const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
         const halfWindow = Math.max(0, Math.floor(windowSize / 2));
 
-        // Smooth each series
         const raw = {
           hbo: rows.map(r => toNum(r.hbo)),
           hbr: rows.map(r => toNum(r.hbr)),
@@ -1073,7 +1037,6 @@
           Object.entries(raw).map(([k, v]) => [k, movingAverageCentered(v, halfWindow)])
         );
 
-        // Build {x, y} and hide first CUT_FIRST_MIN minutes
         function seriesXY(arr, scale = 1) {
           return minutes.map((t, i) => {
             if (!Number.isFinite(t) || t <= CUT_FIRST_MIN) return { x: t, y: null };
@@ -1083,7 +1046,7 @@
         }
 
         const xMax = Math.max(...minutes.filter(Number.isFinite));
-        const hboScale = 1e15; // show HbO/HbR as ×10⁻¹⁵
+        const hboScale = 1e15; 
 
         const dataSets = [
           { id: 'pattern_hbo', label: 'HbO (×10⁻¹⁵)', color: COLORS.hbo, data: seriesXY(sm.hbo, hboScale) },
@@ -1109,7 +1072,7 @@
             data: {
               datasets: [{
                 label,
-                data: pts,               // [{x, y}]
+                data: pts,              
                 parsing: false,
                 borderColor: colorCfg.line,
                 backgroundColor: colorCfg.fill,
@@ -1158,7 +1121,6 @@
         dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
       })();
     </script>
-    <!-- END: Pattern Game — five separate Chart.js graphs -->
 
 
     <div class="timeline" id="timeline2"></div>
@@ -1272,7 +1234,6 @@
       <canvas id="fnirsChartF"></canvas>
     </div>
 
-    <!-- INTERACTIVE BAR CHART #1: replaces static image for reading session -->
     <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 2em; flex-wrap: wrap;">
       <div class="chart-container" style="flex:1; min-width:300px;">
         <canvas id="readingBars"></canvas>
@@ -1289,7 +1250,6 @@
       Similarly, when analyzing the pattern game session, a different set of cognitive patterns emerges.
     </p>
 
-    <!-- INTERACTIVE BAR CHART #2: replaces static image for pattern game session -->
     <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 2em; flex-wrap: wrap;">
       <div class="chart-container" style="flex:1; min-width:300px;">
         <canvas id="patternBars"></canvas>
@@ -1384,10 +1344,8 @@
     </ul>
   </div>
 
-  <!-- Init the two interactive bar charts -->
   <script>
     (function () {
-      // Register plugin if present
       if (window.ChartDataLabels && window.Chart) {
         Chart.register(ChartDataLabels);
       }
@@ -1440,10 +1398,8 @@
         });
       }
 
-      // Reading & note-taking
       drawBars('readingBars', ['45 sec', '1:43'], [-2.52e-15, 1.51e-14]);
 
-      // Pattern game
       drawBars('patternBars',
         ['1:43 (Smallest Effect)', '13:00 (Largest Effect)'],
         [-6.72e-16, 7.78e-15]);
