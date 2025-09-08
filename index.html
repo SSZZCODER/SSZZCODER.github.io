@@ -325,6 +325,7 @@
 
   <div class="intro">
     <h2>Introduction</h2>
+    <img src="images/blueberrygraphic.png" alt="graphic" style="max-width: 75%; min-width: 300px;" />
     <ul>
       <li>
         Blueberry is a bio-sensing computer that is attached to an eyeglass, which collects biological signals to track
@@ -340,246 +341,269 @@
       <li>We used Google Colab, a software that allows us to run Python and work together, and a few libraries like
         pandas and Matplotlib to visualize the data.</li>
     </ul>
-    <img src="images/blueberrygraphic.png" alt="graphic" style="max-width: 75%; min-width: 300px;" />
+   
 
   </div>
 
   <div class="discussion">
     <h2>Discussion</h2>
-    <!-- BEGIN: Reading & Note-Taking Plotly Chart (flex-safe, non-overlapping) -->
-    <section id="reading-chart-block" class="chart-block no-flex-scope">
-      <h2 class="chart-title">Smoothed Optical Data From Reading and Note-Taking Session</h2>
-      <div id="reading-chart"></div>
-    </section>
+  <!-- BEGIN: Reading & Note-Taking — five separate Chart.js graphs -->
+<section id="reading-chart-block" class="chart-block no-flex-scope">
+  <h2 class="chart-title">Smoothed Optical Data From Reading and Note-Taking Session</h2>
 
-    <style>
-      /* Make sure this block is NOT affected by `.discussion div { display:flex; ... }` */
-      .discussion #reading-chart-block,
-      .discussion #reading-chart-block *,
-      #reading-chart-block,
-      #reading-chart-block * {
-        display: block !important;
-        /* defeats the broad flex rule */
+  <div id="reading-chart-stack">
+    <div class="chart-mini"><canvas id="reading_hbo"></canvas></div>
+    <div class="chart-mini"><canvas id="reading_hbr"></canvas></div>
+    <div class="chart-mini"><canvas id="reading_flowActivity"></canvas></div>
+    <div class="chart-mini"><canvas id="reading_heartRate"></canvas></div>
+    <div class="chart-mini"><canvas id="reading_flowIntensity"></canvas></div>
+  </div>
+</section>
+
+<style>
+  /* Keep this block immune to the big flex rule earlier in your CSS */
+  .discussion #reading-chart-block,
+  .discussion #reading-chart-block *,
+  #reading-chart-block,
+  #reading-chart-block * {
+    display: block !important;
+  }
+
+  #reading-chart-block {
+    margin: 1.5rem 0;
+    padding: 1rem 1rem 0.5rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    position: relative;
+    isolation: isolate;
+    z-index: 0;
+    clear: both;
+  }
+
+  #reading-chart-block .chart-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: #222;
+  }
+
+  #reading-chart-stack {
+    width: 100%;
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 14px;
+  }
+
+  .chart-mini {
+    width: 100%;
+    height: 180px;       /* tweak this to taste */
+    position: relative;
+  }
+  .chart-mini canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  @media (max-width: 768px) {
+    .chart-mini { height: 150px; }
+  }
+
+  #reading-chart-block::after {
+    content: "";
+    display: block;
+    height: 1px;
+    margin-top: 1rem;
+  }
+</style>
+
+<!-- Chart.js v3 (safe to include even if already on page) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<script>
+  (async function () {
+    // ---- Config ----
+    const CSV_PATH = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
+    const WINDOW_SECONDS = 5;
+    const CUT_FIRST_MIN = 0.5; // minutes
+
+    // Colors
+    const COLORS = {
+      hbo:           { line: 'rgba(54,162,235,1)',  fill: 'rgba(54,162,235,0.12)' }, // blue
+      hbr:           { line: 'rgba(255,99,132,1)',  fill: 'rgba(255,99,132,0.12)' }, // red
+      flowActivity:  { line: 'rgba(75,192,192,1)',  fill: 'rgba(75,192,192,0.10)' }, // teal
+      heartRate:     { line: 'rgba(153,102,255,1)', fill: 'rgba(153,102,255,0.10)' },// purple
+      flowIntensity: { line: 'rgba(255,159,64,1)',  fill: 'rgba(255,159,64,0.10)' }  // orange
+    };
+
+    // ---- Helpers ----
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const header = lines.shift().split(',').map(h => h.trim());
+      const rows = lines.map(line => {
+        const parts = line.split(',');
+        const o = {};
+        header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
+        return o;
+      });
+      return { header, rows };
+    }
+    function toNum(v) {
+      if (v === '' || v == null) return null;
+      const s = String(v).trim();
+      if (/^(nan|null|none|undefined)$/i.test(s) || s === '') return null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+    function median(a) {
+      const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
+      const n = vals.length;
+      if (!n) return NaN;
+      return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+    }
+    function movingAverageCentered(arr, halfWindow) {
+      const n = arr.length, out = new Array(n).fill(null);
+      const prefix = new Array(n + 1).fill(0);
+      const counts = new Array(n + 1).fill(0);
+      for (let i = 0; i < n; i++) {
+        const v = arr[i];
+        const add = Number.isFinite(v) ? v : 0;
+        const cnt = Number.isFinite(v) ? 1 : 0;
+        prefix[i + 1] = prefix[i] + add;
+        counts[i + 1] = counts[i] + cnt;
       }
-
-      /* Local layout & stacking so it won't cover or be covered by neighbors */
-      #reading-chart-block {
-        margin: 1.5rem 0;
-        padding: 1rem 1rem 0.5rem;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        position: relative;
-        isolation: isolate;
-        /* new stacking context */
-        z-index: 0;
-        clear: both;
-        /* avoid float collisions */
+      for (let i = 0; i < n; i++) {
+        const L = Math.max(0, i - halfWindow);
+        const R = Math.min(n - 1, i + halfWindow);
+        const sum = prefix[R + 1] - prefix[L];
+        const cnt = counts[R + 1] - counts[L];
+        out[i] = cnt > 0 ? sum / cnt : null;
       }
+      return out;
+    }
 
-      #reading-chart-block .chart-title {
-        margin: 0 0 0.75rem;
-        font-size: 1.25rem;
-        line-height: 1.2;
-        color: #222;
-      }
+    // ---- Load & prep data ----
+    const resp = await fetch(CSV_PATH);
+    const text = await resp.text();
+    const { rows } = parseCSV(text);
 
-      #reading-chart {
-        width: 100%;
-        min-height: 480px;
-        height: 70vh;
-        max-height: 900px;
-        position: relative;
-        overflow: visible;
-        /* allow tooltips to show within this context */
-      }
+    const tsRaw = rows.map(r => toNum(r.timestamp));
+    const validTs = tsRaw.filter(Number.isFinite);
+    if (!validTs.length) return;
 
-      @media (max-width: 768px) {
-        #reading-chart {
-          height: 420px;
-        }
-      }
+    const t0 = Math.min(...validTs);
+    const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
 
-      /* Extra safety: ensure following content starts below the chart */
-      #reading-chart-block::after {
-        content: "";
-        display: block;
-        height: 1px;
-        margin-top: 1rem;
-      }
-    </style>
+    // Sampling rate -> smoothing window
+    const diffs = [];
+    for (let i = 1; i < tsRaw.length; i++) {
+      const a = tsRaw[i - 1], b = tsRaw[i];
+      if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
+    }
+    const medDiffMs = median(diffs);
+    const samplingRateHz = 1000 / medDiffMs;
+    const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
+    const halfWindow = Math.max(0, Math.floor(windowSize / 2));
 
-    <script>
-      (async function () {
-        // Load Plotly only if needed
-        async function ensurePlotly(src) {
-          if (window.Plotly) return;
-          await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = true;
-            s.onload = resolve;
-            s.onerror = reject;
-            document.head.appendChild(s);
-          });
-        }
-        await ensurePlotly('https://cdn.plot.ly/plotly-2.35.2.min.js');
+    // Smooth each series
+    const raw = {
+      hbo:           rows.map(r => toNum(r.hbo)),
+      hbr:           rows.map(r => toNum(r.hbr)),
+      flowActivity:  rows.map(r => toNum(r.flowActivity)),
+      heartRate:     rows.map(r => toNum(r.heartRate)),
+      flowIntensity: rows.map(r => toNum(r.flowIntensity))
+    };
+    const sm = Object.fromEntries(
+      Object.entries(raw).map(([k, v]) => [k, movingAverageCentered(v, halfWindow)])
+    );
 
-        // ---- Config ----
-        const CSV_PATH = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
-        const COLS = ['hbo', 'hbr', 'flowActivity', 'heartRate', 'flowIntensity'];
-        const LABELS = ['hbo', 'hbr', 'flowActivity', 'heartRate', 'flowIntensity'];
-        const WINDOW_SECONDS = 5;
-        const CUT_FIRST_MIN = 0.5;
+    // Build {x, y} and hide first CUT_FIRST_MIN minutes
+    function seriesXY(arr, scale = 1) {
+      return minutes.map((t, i) => {
+        if (!Number.isFinite(t) || t <= CUT_FIRST_MIN) return { x: t, y: null };
+        const y = arr[i];
+        return { x: t, y: (Number.isFinite(y) ? y * scale : null) };
+      });
+    }
 
-        // ---- Helpers ----
-        function parseCSV(text) {
-          const lines = text.trim().split(/\r?\n/);
-          const header = lines.shift().split(',').map(h => h.trim());
-          const rows = lines.map(line => {
-            const parts = line.split(',');
-            const o = {};
-            header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
-            return o;
-          });
-          return { header, rows };
-        }
-        function toNum(v) {
-          if (v === '' || v == null) return null;
-          const s = String(v).trim();
-          if (s === '' || /^(nan|null|none|undefined)$/i.test(s)) return null;
-          const n = Number(s);
-          return Number.isFinite(n) ? n : null;
-        }
-        function median(a) {
-          const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
-          const n = vals.length;
-          if (!n) return NaN;
-          return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
-        }
-        function movingAverageCentered(arr, halfWindow) {
-          const n = arr.length, out = new Array(n).fill(null);
-          const prefix = new Array(n + 1).fill(0);
-          const counts = new Array(n + 1).fill(0);
-          for (let i = 0; i < n; i++) {
-            const v = arr[i];
-            const add = Number.isFinite(v) ? v : 0;
-            const cnt = Number.isFinite(v) ? 1 : 0;
-            prefix[i + 1] = prefix[i] + add;
-            counts[i + 1] = counts[i] + cnt;
+    const xMax = Math.max(...minutes.filter(Number.isFinite));
+    const hboScale = 1e15; // show as ×10⁻¹⁵
+
+    const dataSets = [
+      { id: 'reading_hbo',           label: 'HbO (×10⁻¹⁵)',        color: COLORS.hbo,           data: seriesXY(sm.hbo, hboScale) },
+      { id: 'reading_hbr',           label: 'HbR (×10⁻¹⁵)',        color: COLORS.hbr,           data: seriesXY(sm.hbr, hboScale) },
+      { id: 'reading_flowActivity',  label: 'flowActivity',         color: COLORS.flowActivity,  data: seriesXY(sm.flowActivity, 1) },
+      { id: 'reading_heartRate',     label: 'heartRate',            color: COLORS.heartRate,     data: seriesXY(sm.heartRate, 1) },
+      { id: 'reading_flowIntensity', label: 'flowIntensity',        color: COLORS.flowIntensity, data: seriesXY(sm.flowIntensity, 1) }
+    ];
+
+    function rangeOf(points) {
+      const ys = points.map(p => p.y).filter(v => v != null);
+      if (!ys.length) return { min: 0, max: 1 };
+      const min = Math.min(...ys), max = Math.max(...ys);
+      if (min === max) return { min: min - 1, max: max + 1 };
+      return { min, max };
+    }
+
+    function makeChart(canvasId, label, colorCfg, pts) {
+      const r = rangeOf(pts);
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: [{
+            label,
+            data: pts,               // [{x, y}]
+            parsing: false,
+            borderColor: colorCfg.line,
+            backgroundColor: colorCfg.fill,
+            pointRadius: 0,
+            tension: 0.3,
+            spanGaps: false,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: label, align: 'start', color: '#222', font: { size: 12 } },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: (ctx) => `${label}: ${Number.isFinite(ctx.parsed.y) ? ctx.parsed.y.toFixed(3) : '—'}`
+              }
+            }
+          },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Time (Minutes)' },
+              min: 0,
+              max: xMax,
+              grid: { display: true },
+              ticks: { stepSize: 0.25 }
+            },
+            y: {
+              title: { display: false },
+              min: r.min,
+              max: r.max,
+              ticks: { callback: v => Number(v).toFixed(2) }
+            }
           }
-          for (let i = 0; i < n; i++) {
-            const L = Math.max(0, i - halfWindow);
-            const R = Math.min(n - 1, i + halfWindow);
-            const sum = prefix[R + 1] - prefix[L];
-            const cnt = counts[R + 1] - counts[L];
-            out[i] = cnt > 0 ? sum / cnt : null;
-          }
-          return out;
         }
+      });
+    }
 
-        // ---- Data ----
-        const container = document.getElementById('reading-chart');
-        const resp = await fetch(CSV_PATH);
-        const text = await resp.text();
-        const { rows } = parseCSV(text);
+    dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
+  })();
+</script>
+<!-- END: Reading & Note-Taking — five separate Chart.js graphs -->
 
-        const tsRaw = rows.map(r => toNum(r.timestamp));
-        const tsValid = tsRaw.filter(Number.isFinite);
-        if (!tsValid.length) return;
-        const t0 = Math.min(...tsValid);
-        const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
-
-        const diffs = [];
-        for (let i = 1; i < tsRaw.length; i++) {
-          const a = tsRaw[i - 1], b = tsRaw[i];
-          if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
-        }
-        const medDiffMs = median(diffs);
-        const samplingRateHz = 1000 / medDiffMs;
-        const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
-        const halfWindow = Math.max(0, Math.floor(windowSize / 2));
-
-        // ---- Traces ----
-        const traces = [];
-        const rowsN = COLS.length;
-
-        for (let i = 0; i < COLS.length; i++) {
-          const col = COLS[i];
-          const raw = rows.map(r => toNum(r[col]));
-          const smoothed = movingAverageCentered(raw, halfWindow);
-
-          const xVals = minutes.slice();
-          const yVals = smoothed.slice();
-          for (let j = 0; j < xVals.length; j++) {
-            if (!Number.isFinite(xVals[j]) || xVals[j] <= CUT_FIRST_MIN) yVals[j] = null;
-          }
-
-          traces.push({
-            type: 'scatter',
-            mode: 'lines',
-            name: LABELS[i],
-            x: xVals,
-            y: yVals,
-            xaxis: 'x' + (i ? i + 1 : ''),
-            yaxis: 'y' + (i ? i + 1 : ''),
-            hovertemplate: `${LABELS[i]}<br>t=%{x} min<br>value=%{y}<extra></extra>`
-          });
-        }
-
-        // ---- Layout ----
-        const layout = {
-          grid: { rows: rowsN, columns: 1, pattern: 'independent', roworder: 'top to bottom' },
-          hovermode: 'x unified',
-          hoverlabel: { namelength: -1 },
-          spikedistance: -1,
-          margin: { l: 60, r: 20, t: 10, b: 40 },
-          uirevision: true
-        };
-
-        for (let i = 0; i < rowsN; i++) {
-          const isBottom = (i === rowsN - 1);
-          const xKey = 'xaxis' + (i ? i + 1 : '');
-          const yKey = 'yaxis' + (i ? i + 1 : '');
-
-          const allY = traces[i].y.filter(Number.isFinite);
-          const maxAbs = Math.max(...allY.map(Math.abs), 0);
-          let powerNote = '';
-          if (maxAbs !== 0 && (maxAbs >= 1000 || maxAbs < 0.1)) {
-            const exp = Math.floor(Math.log10(maxAbs));
-            powerNote = `×10^${exp}`;
-            traces[i].y = traces[i].y.map(v => Number.isFinite(v) ? v / Math.pow(10, exp) : v);
-          }
-
-          layout[xKey] = {
-            title: isBottom ? 'Time (Minutes)' : undefined,
-            tickmode: 'linear',
-            dtick: 0.25,
-            showgrid: true,
-            showspikes: true,
-            spikemode: 'across',
-            spikesnap: 'cursor',
-            range: [0, Math.max(...minutes.filter(Number.isFinite))],
-            matches: i ? 'x' : undefined
-          };
-
-          layout[yKey] = {
-            title: powerNote ? `${LABELS[i]} (${powerNote})` : LABELS[i],
-            zeroline: false,
-            showgrid: true,
-            tickformat: ',.2f'
-          };
-        }
-
-        const config = { responsive: true, displaylogo: false };
-        await Plotly.newPlot(container, traces, layout, config);
-
-        // Resize safely within this block only
-        const ro = new ResizeObserver(() => Plotly.Plots.resize(container));
-        ro.observe(container);
-      })();
-    </script>
-    <!-- END: Reading & Note-Taking Plotly Chart -->
 
 
     <div class="timeline" id="timeline"></div>
@@ -802,227 +826,263 @@
       playing a pattern recognition game.
     </p>
 
-    <!-- BEGIN: Pattern Game Plotly Chart (flex-safe, non-overlapping) -->
-    <section id="pattern-chart-block" class="chart-block no-flex-scope">
-      <h2 class="chart-title">Smoothed Optical Data From Pattern Game Session</h2>
-      <div id="pattern-chart"></div>
-    </section>
+    <!-- BEGIN: Pattern Game — five separate Chart.js graphs -->
+<section id="pattern-chart-block" class="chart-block no-flex-scope">
+  <h2 class="chart-title">Smoothed Optical Data From Pattern Game Session</h2>
 
-    <style>
-      /* Prevent `.discussion div { display:flex; ... }` from breaking Plotly layout */
-      .discussion #pattern-chart-block,
-      .discussion #pattern-chart-block *,
-      #pattern-chart-block,
-      #pattern-chart-block * {
-        display: block !important;
+  <div id="pattern-chart-stack">
+    <div class="chart-mini"><canvas id="pattern_hbo"></canvas></div>
+    <div class="chart-mini"><canvas id="pattern_hbr"></canvas></div>
+    <div class="chart-mini"><canvas id="pattern_flowActivity"></canvas></div>
+    <div class="chart-mini"><canvas id="pattern_heartRate"></canvas></div>
+    <div class="chart-mini"><canvas id="pattern_flowIntensity"></canvas></div>
+  </div>
+</section>
+
+<style>
+  /* Keep this block immune to the broad flex rule in .discussion div */
+  .discussion #pattern-chart-block,
+  .discussion #pattern-chart-block *,
+  #pattern-chart-block,
+  #pattern-chart-block * {
+    display: block !important;
+  }
+
+  #pattern-chart-block {
+    margin: 1.5rem 0;
+    padding: 1rem 1rem 0.5rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    position: relative;
+    isolation: isolate;
+    z-index: 0;
+    clear: both;
+  }
+
+  #pattern-chart-block .chart-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: #222;
+  }
+
+  #pattern-chart-stack {
+    width: 100%;
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 14px;
+  }
+
+  .chart-mini {
+    width: 100%;
+    height: 180px; /* adjust height as needed */
+    position: relative;
+  }
+  .chart-mini canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  @media (max-width: 768px) {
+    .chart-mini { height: 150px; }
+  }
+
+  #pattern-chart-block::after {
+    content: "";
+    display: block;
+    height: 1px;
+    margin-top: 1rem;
+  }
+</style>
+
+<!-- Chart.js v3 (safe if included elsewhere too) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<script>
+  (async function () {
+    // ---- Config ----
+    const CSV_PATH = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
+    const WINDOW_SECONDS = 5;
+    const CUT_FIRST_MIN = 0.5; // minutes
+
+    // Colors to match your palette
+    const COLORS = {
+      hbo:           { line: 'rgba(54,162,235,1)',  fill: 'rgba(54,162,235,0.12)' }, // blue
+      hbr:           { line: 'rgba(255,99,132,1)',  fill: 'rgba(255,99,132,0.12)' }, // red
+      flowActivity:  { line: 'rgba(75,192,192,1)',  fill: 'rgba(75,192,192,0.10)' }, // teal
+      heartRate:     { line: 'rgba(153,102,255,1)', fill: 'rgba(153,102,255,0.10)' },// purple
+      flowIntensity: { line: 'rgba(255,159,64,1)',  fill: 'rgba(255,159,64,0.10)' }  // orange
+    };
+
+    // ---- Helpers ----
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const header = lines.shift().split(',').map(h => h.trim());
+      const rows = lines.map(line => {
+        const parts = line.split(',');
+        const o = {};
+        header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
+        return o;
+      });
+      return { header, rows };
+    }
+    function toNum(v) {
+      if (v === '' || v == null) return null;
+      const s = String(v).trim();
+      if (/^(nan|null|none|undefined)$/i.test(s) || s === '') return null;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : null;
+    }
+    function median(a) {
+      const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
+      const n = vals.length;
+      if (!n) return NaN;
+      return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+    }
+    function movingAverageCentered(arr, halfWindow) {
+      const n = arr.length, out = new Array(n).fill(null);
+      const prefix = new Array(n + 1).fill(0);
+      const counts = new Array(n + 1).fill(0);
+      for (let i = 0; i < n; i++) {
+        const v = arr[i];
+        const add = Number.isFinite(v) ? v : 0;
+        const cnt = Number.isFinite(v) ? 1 : 0;
+        prefix[i + 1] = prefix[i] + add;
+        counts[i + 1] = counts[i] + cnt;
       }
-
-      #pattern-chart-block {
-        margin: 1.5rem 0;
-        padding: 1rem 1rem 0.5rem;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        position: relative;
-        isolation: isolate;
-        z-index: 0;
-        clear: both;
+      for (let i = 0; i < n; i++) {
+        const L = Math.max(0, i - halfWindow);
+        const R = Math.min(n - 1, i + halfWindow);
+        const sum = prefix[R + 1] - prefix[L];
+        const cnt = counts[R + 1] - counts[L];
+        out[i] = cnt > 0 ? sum / cnt : null;
       }
+      return out;
+    }
 
-      #pattern-chart-block .chart-title {
-        margin: 0 0 0.75rem;
-        font-size: 1.25rem;
-        line-height: 1.2;
-        color: #222;
-      }
+    // ---- Load & prep data ----
+    const resp = await fetch(CSV_PATH);
+    const text = await resp.text();
+    const { rows } = parseCSV(text);
 
-      #pattern-chart {
-        width: 100%;
-        min-height: 480px;
-        height: 70vh;
-        max-height: 900px;
-        position: relative;
-        overflow: visible;
-      }
+    const tsRaw = rows.map(r => toNum(r.timestamp));
+    const validTs = tsRaw.filter(Number.isFinite);
+    if (!validTs.length) return;
 
-      @media (max-width: 768px) {
-        #pattern-chart {
-          height: 420px;
-        }
-      }
+    const t0 = Math.min(...validTs);
+    const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
 
-      #pattern-chart-block::after {
-        content: "";
-        display: block;
-        height: 1px;
-        margin-top: 1rem;
-      }
-    </style>
+    // Sampling rate -> smoothing window
+    const diffs = [];
+    for (let i = 1; i < tsRaw.length; i++) {
+      const a = tsRaw[i - 1], b = tsRaw[i];
+      if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
+    }
+    const medDiffMs = median(diffs);
+    const samplingRateHz = 1000 / medDiffMs;
+    const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
+    const halfWindow = Math.max(0, Math.floor(windowSize / 2));
 
-    <script>
-      (async function () {
-        async function ensurePlotly(src) {
-          if (window.Plotly) return;
-          await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.async = true;
-            s.onload = resolve;
-            s.onerror = reject;
-            document.head.appendChild(s);
-          });
-        }
-        await ensurePlotly('https://cdn.plot.ly/plotly-2.35.2.min.js');
+    // Smooth each series
+    const raw = {
+      hbo:           rows.map(r => toNum(r.hbo)),
+      hbr:           rows.map(r => toNum(r.hbr)),
+      flowActivity:  rows.map(r => toNum(r.flowActivity)),
+      heartRate:     rows.map(r => toNum(r.heartRate)),
+      flowIntensity: rows.map(r => toNum(r.flowIntensity))
+    };
+    const sm = Object.fromEntries(
+      Object.entries(raw).map(([k, v]) => [k, movingAverageCentered(v, halfWindow)])
+    );
 
-        const CSV_PATH = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
-        const COLS = ['hbo', 'hbr', 'flowActivity', 'heartRate', 'flowIntensity'];
-        const LABELS = ['hbo', 'hbr', 'flowActivity', 'heartRate', 'flowIntensity'];
-        const WINDOW_SECONDS = 5;
-        const CUT_FIRST_MIN = 0.5;
+    // Build {x, y} and hide first CUT_FIRST_MIN minutes
+    function seriesXY(arr, scale = 1) {
+      return minutes.map((t, i) => {
+        if (!Number.isFinite(t) || t <= CUT_FIRST_MIN) return { x: t, y: null };
+        const y = arr[i];
+        return { x: t, y: (Number.isFinite(y) ? y * scale : null) };
+      });
+    }
 
-        function parseCSV(text) {
-          const lines = text.trim().split(/\r?\n/);
-          const header = lines.shift().split(',').map(h => h.trim());
-          const rows = lines.map(line => {
-            const parts = line.split(',');
-            const o = {};
-            header.forEach((h, i) => o[h] = (parts[i] ?? '').trim());
-            return o;
-          });
-          return { header, rows };
-        }
-        function toNum(v) {
-          if (v === '' || v == null) return null;
-          const s = String(v).trim();
-          if (s === '' || /^(nan|null|none|undefined)$/i.test(s)) return null;
-          const n = Number(s);
-          return Number.isFinite(n) ? n : null;
-        }
-        function median(a) {
-          const vals = a.filter(Number.isFinite).slice().sort((x, y) => x - y);
-          const n = vals.length;
-          if (!n) return NaN;
-          return (n % 2) ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
-        }
-        function movingAverageCentered(arr, halfWindow) {
-          const n = arr.length, out = new Array(n).fill(null);
-          const prefix = new Array(n + 1).fill(0);
-          const counts = new Array(n + 1).fill(0);
-          for (let i = 0; i < n; i++) {
-            const v = arr[i];
-            const add = Number.isFinite(v) ? v : 0;
-            const cnt = Number.isFinite(v) ? 1 : 0;
-            prefix[i + 1] = prefix[i] + add;
-            counts[i + 1] = counts[i] + cnt;
+    const xMax = Math.max(...minutes.filter(Number.isFinite));
+    const hboScale = 1e15; // show HbO/HbR as ×10⁻¹⁵
+
+    const dataSets = [
+      { id: 'pattern_hbo',           label: 'HbO (×10⁻¹⁵)',        color: COLORS.hbo,           data: seriesXY(sm.hbo, hboScale) },
+      { id: 'pattern_hbr',           label: 'HbR (×10⁻¹⁵)',        color: COLORS.hbr,           data: seriesXY(sm.hbr, hboScale) },
+      { id: 'pattern_flowActivity',  label: 'flowActivity',         color: COLORS.flowActivity,  data: seriesXY(sm.flowActivity, 1) },
+      { id: 'pattern_heartRate',     label: 'heartRate',            color: COLORS.heartRate,     data: seriesXY(sm.heartRate, 1) },
+      { id: 'pattern_flowIntensity', label: 'flowIntensity',        color: COLORS.flowIntensity, data: seriesXY(sm.flowIntensity, 1) }
+    ];
+
+    function rangeOf(points) {
+      const ys = points.map(p => p.y).filter(v => v != null);
+      if (!ys.length) return { min: 0, max: 1 };
+      const min = Math.min(...ys), max = Math.max(...ys);
+      if (min === max) return { min: min - 1, max: max + 1 };
+      return { min, max };
+    }
+
+    function makeChart(canvasId, label, colorCfg, pts) {
+      const r = rangeOf(pts);
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          datasets: [{
+            label,
+            data: pts,               // [{x, y}]
+            parsing: false,
+            borderColor: colorCfg.line,
+            backgroundColor: colorCfg.fill,
+            pointRadius: 0,
+            tension: 0.3,
+            spanGaps: false,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: label, align: 'start', color: '#222', font: { size: 12 } },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: (ctx) => `${label}: ${Number.isFinite(ctx.parsed.y) ? ctx.parsed.y.toFixed(3) : '—'}`
+              }
+            }
+          },
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Time (Minutes)' },
+              min: 0,
+              max: xMax,
+              grid: { display: true },
+              ticks: { stepSize: 0.25 }
+            },
+            y: {
+              title: { display: false },
+              min: r.min,
+              max: r.max,
+              ticks: { callback: v => Number(v).toFixed(2) }
+            }
           }
-          for (let i = 0; i < n; i++) {
-            const L = Math.max(0, i - halfWindow);
-            const R = Math.min(n - 1, i + halfWindow);
-            const sum = prefix[R + 1] - prefix[L];
-            const cnt = counts[R + 1] - counts[L];
-            out[i] = cnt > 0 ? sum / cnt : null;
-          }
-          return out;
         }
+      });
+    }
 
-        const container = document.getElementById('pattern-chart');
-        const resp = await fetch(CSV_PATH);
-        const text = await resp.text();
-        const { rows } = parseCSV(text);
+    dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
+  })();
+</script>
+<!-- END: Pattern Game — five separate Chart.js graphs -->
 
-        const tsRaw = rows.map(r => toNum(r.timestamp));
-        const tsValid = tsRaw.filter(Number.isFinite);
-        if (!tsValid.length) return;
-        const t0 = Math.min(...tsValid);
-        const minutes = tsRaw.map(t => Number.isFinite(t) ? (t - t0) / (1000 * 60) : null);
-
-        const diffs = [];
-        for (let i = 1; i < tsRaw.length; i++) {
-          const a = tsRaw[i - 1], b = tsRaw[i];
-          if (Number.isFinite(a) && Number.isFinite(b)) diffs.push(b - a);
-        }
-        const medDiffMs = median(diffs);
-        const samplingRateHz = 1000 / medDiffMs;
-        const windowSize = Math.max(1, Math.round(samplingRateHz * WINDOW_SECONDS));
-        const halfWindow = Math.max(0, Math.floor(windowSize / 2));
-
-        const traces = [];
-        const rowsN = COLS.length;
-
-        for (let i = 0; i < COLS.length; i++) {
-          const col = COLS[i];
-          const raw = rows.map(r => toNum(r[col]));
-          const smoothed = movingAverageCentered(raw, halfWindow);
-
-          const xVals = minutes.slice();
-          const yVals = smoothed.slice();
-          for (let j = 0; j < xVals.length; j++) {
-            if (!Number.isFinite(xVals[j]) || xVals[j] <= CUT_FIRST_MIN) yVals[j] = null;
-          }
-
-          traces.push({
-            type: 'scatter',
-            mode: 'lines',
-            name: LABELS[i],
-            x: xVals,
-            y: yVals,
-            xaxis: 'x' + (i ? i + 1 : ''),
-            yaxis: 'y' + (i ? i + 1 : ''),
-            hovertemplate: `${LABELS[i]}<br>t=%{x} min<br>value=%{y}<extra></extra>`
-          });
-        }
-
-        const layout = {
-          grid: { rows: rowsN, columns: 1, pattern: 'independent', roworder: 'top to bottom' },
-          hovermode: 'x unified',
-          hoverlabel: { namelength: -1 },
-          spikedistance: -1,
-          margin: { l: 60, r: 20, t: 10, b: 40 },
-          uirevision: true
-        };
-
-        for (let i = 0; i < rowsN; i++) {
-          const isBottom = (i === rowsN - 1);
-          const xKey = 'xaxis' + (i ? i + 1 : '');
-          const yKey = 'yaxis' + (i ? i + 1 : '');
-
-          const allY = traces[i].y.filter(Number.isFinite);
-          const maxAbs = Math.max(...allY.map(Math.abs), 0);
-          let powerNote = '';
-          if (maxAbs !== 0 && (maxAbs >= 1000 || maxAbs < 0.1)) {
-            const exp = Math.floor(Math.log10(maxAbs));
-            powerNote = `×10^${exp}`;
-            traces[i].y = traces[i].y.map(v => Number.isFinite(v) ? v / Math.pow(10, exp) : v);
-          }
-
-          layout[xKey] = {
-            title: isBottom ? 'Time (Minutes)' : undefined,
-            tickmode: 'linear',
-            dtick: 0.25,
-            showgrid: true,
-            showspikes: true,
-            spikemode: 'across',
-            spikesnap: 'cursor',
-            range: [0, Math.max(...minutes.filter(Number.isFinite))],
-            matches: i ? 'x' : undefined
-          };
-
-          layout[yKey] = {
-            title: powerNote ? `${LABELS[i]} (${powerNote})` : LABELS[i],
-            zeroline: false,
-            showgrid: true,
-            tickformat: ',.2f'
-          };
-        }
-
-        const config = { responsive: true, displaylogo: false };
-        await Plotly.newPlot(container, traces, layout, config);
-
-        const ro = new ResizeObserver(() => Plotly.Plots.resize(container));
-        ro.observe(container);
-      })();
-    </script>
-    <!-- END: Pattern Game Plotly Chart -->
 
     <div class="timeline" id="timeline2"></div>
 
