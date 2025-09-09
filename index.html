@@ -367,6 +367,101 @@
       font-size: 1.05em;
       line-height: 1.7;
     }
+
+    /* --- GLOBAL MOBILE PADDING --- */
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+    }
+
+    /* --- STOP FLEX FROM TOUCHING CHART/Timeline CONTAINERS --- */
+    /* Your earlier `.discussion div { display:flex; }` is too broad. */
+    .discussion .chart-container,
+    .discussion .chart-container *,
+    .discussion .chart-block,
+    .discussion .chart-block *,
+    .discussion .timeline,
+    .discussion .timeline * {
+      display: block !important;
+    }
+
+    /* --- SIDE-BY-SIDE text + bar chart rows --- */
+    .two-col {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 2em;
+      flex-wrap: nowrap;
+    }
+
+    .two-col .chart-container {
+      flex: 1 1 420px;
+      min-width: 280px;
+      height: 320px;
+      /* gives Chart.js room for ticks/labels */
+    }
+
+    .two-col p {
+      flex: 1 1 360px;
+      margin: 0;
+      font-size: 1.1em;
+      line-height: 1.8;
+    }
+
+    /* Stack on phones */
+    @media (max-width: 900px) {
+      .two-col {
+        flex-direction: column;
+      }
+
+      .two-col .chart-container {
+        width: 100%;
+        min-width: 0;
+        height: 280px;
+      }
+
+      .two-col p {
+        width: 100%;
+        margin-top: .5rem;
+      }
+    }
+
+    /* --- STORY BLOCKS (student/athlete/daily insights) --- */
+    @media (max-width: 900px) {
+
+      .story-row,
+      .story-row.reverse {
+        flex-direction: column;
+      }
+
+      .story-media,
+      .story-copy {
+        flex-basis: auto;
+        min-width: 0;
+      }
+    }
+
+    /* --- LONG LINKS IN SOURCES --- */
+    .sources,
+    .sources a,
+    .sources li {
+      overflow-wrap: anywhere;
+      /* modern */
+      word-break: break-word;
+      /* fallback */
+    }
+
+    /* Safety net so nothing causes horizontal scroll */
+    img,
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -480,7 +575,7 @@
       (async function () {
         const CSV_PATH = 'downloads/2025-07-13_11_26_50_AM-optical-data.csv';
         const WINDOW_SECONDS = 5;
-        const CUT_FIRST_MIN = 0.5; 
+        const CUT_FIRST_MIN = 0.5;
 
         const COLORS = {
           hbo: { line: 'rgba(54,162,235,1)', fill: 'rgba(54,162,235,0.12)' }, // blue
@@ -576,7 +671,7 @@
         }
 
         const xMax = Math.max(...minutes.filter(Number.isFinite));
-        const hboScale = 1e15; 
+        const hboScale = 1e15;
 
         const dataSets = [
           { id: 'reading_hbo', label: 'HbO (×10⁻¹⁵)', color: COLORS.hbo, data: seriesXY(sm.hbo, hboScale) },
@@ -602,7 +697,7 @@
             data: {
               datasets: [{
                 label,
-                data: pts,              
+                data: pts,
                 parsing: false,
                 borderColor: colorCfg.line,
                 backgroundColor: colorCfg.fill,
@@ -792,7 +887,7 @@
                 fill: true,
                 tension: 0.3,
                 pointRadius: 2,
-                spanGaps: false 
+                spanGaps: false
               }]
             },
 
@@ -950,7 +1045,7 @@
       (async function () {
         const CSV_PATH = 'downloads/2025-07-16_10_15_44_AM-optical-data.csv';
         const WINDOW_SECONDS = 5;
-        const CUT_FIRST_MIN = 0.5; 
+        const CUT_FIRST_MIN = 0.5;
 
         const COLORS = {
           hbo: { line: 'rgba(54,162,235,1)', fill: 'rgba(54,162,235,0.12)' }, // blue
@@ -1046,7 +1141,7 @@
         }
 
         const xMax = Math.max(...minutes.filter(Number.isFinite));
-        const hboScale = 1e15; 
+        const hboScale = 1e15;
 
         const dataSets = [
           { id: 'pattern_hbo', label: 'HbO (×10⁻¹⁵)', color: COLORS.hbo, data: seriesXY(sm.hbo, hboScale) },
@@ -1072,7 +1167,7 @@
             data: {
               datasets: [{
                 label,
-                data: pts,              
+                data: pts,
                 parsing: false,
                 borderColor: colorCfg.line,
                 backgroundColor: colorCfg.fill,
@@ -1354,28 +1449,37 @@
       const barColor = v => (v >= 0 ? 'rgba(255,99,132,0.85)' : 'rgba(135,206,235,0.95)');
 
       function makeOptions() {
+        const isNarrow = window.matchMedia('(max-width: 520px)').matches;
+
         return {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: { display: false },
-            tooltip: {
-              callbacks: { label: ctx => ` HbO: ${toSci(ctx.parsed.y)}` }
-            },
+            tooltip: { callbacks: { label: ctx => ` HbO: ${Number(ctx.parsed.y).toExponential(2)}` } },
             datalabels: {
               anchor: ctx => (ctx.parsed.y >= 0 ? 'end' : 'start'),
               align: ctx => (ctx.parsed.y >= 0 ? 'end' : 'start'),
               offset: 6,
-              formatter: v => toSci(v),
+              formatter: v => Number(v).toExponential(2),
               font: { weight: 'bold' }
             }
           },
           scales: {
-            x: { grid: { display: false } },
+            x: {
+              offset: true,                    // centers category ticks under bars
+              grid: { display: false },
+              ticks: {
+                autoSkip: false,               // <- SHOW BOTH
+                maxRotation: 0,                // keep horizontal
+                minRotation: 0,
+                padding: 6,
+              }
+            },
             y: {
               grid: { borderDash: [4, 4] },
-              ticks: { callback: v => toSci(v) },
-              title: { display: true, text: 'HbO Level' }
+              ticks: { callback: v => Number(v).toExponential(2) },
+              title: { display: !isNarrow, text: 'HbO Level' }
             }
           }
         };
@@ -1384,13 +1488,22 @@
       function drawBars(canvasId, labels, values) {
         const el = document.getElementById(canvasId);
         if (!el || !window.Chart) return;
+
+        // On phones, split long labels into 2 lines
+        const isNarrow = window.matchMedia('(max-width: 520px)').matches;
+        const prettyLabels = isNarrow
+          ? labels.map(s => s.includes('(')
+            ? s.replace(')', '').split(' (').map((t, i) => i ? '(' + t + ')' : t) // -> ["0:45", "(Smallest Effect)"]
+            : [s])
+          : labels;
+
         new Chart(el.getContext('2d'), {
           type: 'bar',
           data: {
-            labels,
+            labels: prettyLabels,              // Chart.js renders arrays as multi-line labels
             datasets: [{
               data: values,
-              backgroundColor: values.map(barColor),
+              backgroundColor: values.map(v => (v >= 0 ? 'rgba(255,99,132,0.85)' : 'rgba(135,206,235,0.95)')),
               borderRadius: 10
             }]
           },
@@ -1398,7 +1511,8 @@
         });
       }
 
-      drawBars('readingBars', ['45 sec', '1:43'], [-2.52e-15, 1.51e-14]);
+
+      drawBars('readingBars', ['0:45 (Smallest Effect)', '1:43 (Largest Effect)'], [-2.52e-15, 1.51e-14]);
 
       drawBars('patternBars',
         ['1:43 (Smallest Effect)', '13:00 (Largest Effect)'],
