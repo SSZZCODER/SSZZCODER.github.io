@@ -577,6 +577,16 @@
         const WINDOW_SECONDS = 5;
         const CUT_FIRST_MIN = 0.5;
 
+        // Vertical lines at these minute marks (deduped)
+        const MARKER_MINUTES = [...new Set([
+          0.75,     // 0:45
+          1.7167,   // 1:43
+          4.3667,   // 4:22
+          6.0,      // 6:00
+          6.3,      // 6:18
+          7.4       // 7:24
+        ])];
+
         const COLORS = {
           hbo: { line: 'rgba(54,162,235,1)', fill: 'rgba(54,162,235,0.12)' }, // blue
           hbr: { line: 'rgba(255,99,132,1)', fill: 'rgba(255,99,132,0.12)' }, // red
@@ -689,23 +699,44 @@
           return { min, max };
         }
 
+        function vlineDatasets(r) {
+          // One tiny 2-point line per marker at x = marker, spanning full y-range
+          return MARKER_MINUTES.map((mx) => ({
+            label: `_marker_${mx}`,
+            data: [{ x: mx, y: r.min }, { x: mx, y: r.max }],
+            parsing: false,
+            borderColor: '#000',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false,
+            tension: 0,
+            order: 999,       // draw on top of main series
+            clip: true        // keep inside plot area
+          }));
+        }
+
         function makeChart(canvasId, label, colorCfg, pts) {
           const r = rangeOf(pts);
           const ctx = document.getElementById(canvasId).getContext('2d');
+
           return new Chart(ctx, {
             type: 'line',
             data: {
-              datasets: [{
-                label,
-                data: pts,
-                parsing: false,
-                borderColor: colorCfg.line,
-                backgroundColor: colorCfg.fill,
-                pointRadius: 0,
-                tension: 0.3,
-                spanGaps: false,
-                fill: false
-              }]
+              datasets: [
+                {
+                  label,
+                  data: pts,
+                  parsing: false,
+                  borderColor: colorCfg.line,
+                  backgroundColor: colorCfg.fill,
+                  pointRadius: 0,
+                  tension: 0.3,
+                  spanGaps: false,
+                  fill: false,
+                  order: 0
+                },
+                ...vlineDatasets(r) // <-- black vertical lines
+              ]
             },
             options: {
               responsive: true,
@@ -746,6 +777,8 @@
         dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
       })();
     </script>
+
+
 
 
 
@@ -1047,6 +1080,11 @@
         const WINDOW_SECONDS = 5;
         const CUT_FIRST_MIN = 0.5;
 
+        // EDIT these if your pattern-session timestamps differ
+        const MARKER_MINUTES = [...new Set([
+          1.0, 1.5, 2.75, 4.9667, 5.5333, 6.2, 8.8667, 13.0167
+        ])];
+
         const COLORS = {
           hbo: { line: 'rgba(54,162,235,1)', fill: 'rgba(54,162,235,0.12)' }, // blue
           hbr: { line: 'rgba(255,99,132,1)', fill: 'rgba(255,99,132,0.12)' }, // red
@@ -1159,23 +1197,43 @@
           return { min, max };
         }
 
+        function vlineDatasets(r) {
+          // Solid black vertical lines spanning y-range at each marker
+          return MARKER_MINUTES.map((mx) => ({
+            label: `_marker_${mx}`,
+            data: [{ x: mx, y: r.min }, { x: mx, y: r.max }],
+            parsing: false,
+            borderColor: '#000',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: false,
+            tension: 0,
+            order: 999,
+            clip: true
+          }));
+        }
+
         function makeChart(canvasId, label, colorCfg, pts) {
           const r = rangeOf(pts);
           const ctx = document.getElementById(canvasId).getContext('2d');
           return new Chart(ctx, {
             type: 'line',
             data: {
-              datasets: [{
-                label,
-                data: pts,
-                parsing: false,
-                borderColor: colorCfg.line,
-                backgroundColor: colorCfg.fill,
-                pointRadius: 0,
-                tension: 0.3,
-                spanGaps: false,
-                fill: false
-              }]
+              datasets: [
+                {
+                  label,
+                  data: pts,
+                  parsing: false,
+                  borderColor: colorCfg.line,
+                  backgroundColor: colorCfg.fill,
+                  pointRadius: 0,
+                  tension: 0.3,
+                  spanGaps: false,
+                  fill: false,
+                  order: 0
+                },
+                ...vlineDatasets(r) // <-- black vertical lines
+              ]
             },
             options: {
               responsive: true,
@@ -1216,6 +1274,7 @@
         dataSets.forEach(s => makeChart(s.id, s.label, s.color, s.data));
       })();
     </script>
+
 
 
     <div class="timeline" id="timeline2"></div>
