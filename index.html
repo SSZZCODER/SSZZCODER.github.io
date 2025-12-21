@@ -6,78 +6,170 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Analysis Using Blueberry</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap');
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: #818cf8;
+      --secondary: #8b5cf6;
+      --accent: #ec4899;
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg-light: #f8fafc;
+      --bg-card: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f4ff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-light);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
       padding: 2em;
-      color: #333;
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .title-page {
       text-align: center;
-      margin-bottom: 3em;
+      margin-bottom: 0;
+      padding: 4em 2em;
+      background: var(--bg-card);
+      border-radius: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
     }
 
     h1 {
-      font-size: 3em;
-      color: #4b0082;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.5em);
+      font-weight: 700;
       margin: 0;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      display: block;
+      color: var(--text-primary);
+    }
+
+    .title-page h1 {
+      color: var(--primary);
     }
 
     .subtitle {
-      font-size: 1.2em;
-      margin-top: 0.5em;
+      font-size: 1.15em;
+      margin-top: 1em;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
     .intro,
     .discussion {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
-      background: #ffffff;
-      padding: 2em;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background: var(--bg-card);
+      padding: 3em;
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .intro:hover,
+    .discussion:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
     }
 
     .intro h2,
     .discussion h2 {
-      font-size: 1.8em;
-      font-weight: bold;
-      color: #222;
-      margin-bottom: 0.5em;
+      font-family: 'Playfair Display', serif;
+      font-size: 2.25em;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1em;
+      position: relative;
+      padding-bottom: 0.5em;
+    }
+
+    .intro h2::after,
+    .discussion h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 2px;
+    }
+
+    .intro img {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .intro img:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
     }
 
     ul {
-      font-size: 1.1em;
-      line-height: 1.6;
+      font-size: 1.05em;
+      line-height: 1.8;
       padding-left: 1.5em;
+      color: var(--text-primary);
+    }
+
+    ul li {
+      margin-bottom: 0.75em;
+      position: relative;
+    }
+
+    ul li::marker {
+      color: var(--primary);
+      font-weight: 600;
     }
 
     .discussion img {
       max-width: 100%;
       height: auto;
-      margin: 1em 0;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease-in-out;
+      margin: 1.5em 0;
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: zoom-in;
+      border: 1px solid var(--border-color);
     }
 
     .discussion img:hover {
-      transform: scale(1.02);
+      transform: scale(1.02) translateY(-4px);
+      box-shadow: var(--shadow-xl);
     }
 
     .discussion p {
-      margin-top: 1em;
-      font-size: 1.1em;
-      line-height: 1.8;
+      margin-top: 1.25em;
+      font-size: 1.05em;
+      line-height: 1.9;
+      color: var(--text-primary);
     }
 
     .discussion ul {
-      margin-top: 1em;
-      font-size: 1.1em;
-      line-height: 1.8;
+      margin-top: 1.25em;
+      font-size: 1.05em;
+      line-height: 1.9;
     }
 
     .discussion div {
@@ -110,18 +202,34 @@
     }
 
     .downloads {
-      max-width: 900px;
-      margin: 3em auto;
-      background: #e3ecff;
-      padding: 2em;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-left: 6px solid #4b0082;
+      max-width: 1000px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%);
+      padding: 2.5em;
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .downloads::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--primary), var(--secondary));
+      border-radius: 0 4px 4px 0;
     }
 
     .downloads h2 {
-      color: #4b0082;
-      margin-bottom: 1em;
+      font-family: 'Playfair Display', serif;
+      font-size: 2em;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1.5em;
     }
 
     .downloads ul {
@@ -135,16 +243,27 @@
 
     .downloads a {
       text-decoration: none;
-      background-color: #4b0082;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       color: #fff;
-      padding: 0.6em 1.2em;
-      border-radius: 6px;
-      transition: background-color 0.3s ease;
-      display: inline-block;
+      padding: 0.875em 1.75em;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5em;
+      font-weight: 500;
+      box-shadow: var(--shadow-md);
+      border: none;
     }
 
     .downloads a:hover {
-      background-color: #360061;
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary) 100%);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .downloads a:active {
+      transform: translateY(0);
     }
 
     .tooltip-image {
@@ -155,108 +274,132 @@
     .tooltip-image img {
       display: block;
       width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-color);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tooltip-image img:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
     }
 
     .tooltip-text {
       visibility: hidden;
       opacity: 0;
       position: absolute;
-      top: 12px;
-      left: 12px;
-      background-color: rgba(255, 255, 255, 0.95);
-      color: #333;
-      border-radius: 8px;
-      padding: 1em;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      top: 16px;
+      left: 16px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      color: var(--text-primary);
+      border-radius: 12px;
+      padding: 1.25em;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
       z-index: 10;
       width: 300px;
       font-size: 0.95em;
-      transition: opacity 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .tooltip-image:hover .tooltip-text {
       visibility: visible;
       opacity: 1;
+      transform: translateY(-4px);
     }
 
     .timeline {
       position: relative;
       width: 100%;
-      height: 4px;
-      background: #ccc;
-      border-radius: 2px;
-      margin: 1em 0;
-
+      height: 6px;
+      background: linear-gradient(90deg, var(--border-color) 0%, var(--primary-light) 50%, var(--border-color) 100%);
+      border-radius: 3px;
+      margin: 2em 0;
       overflow: visible;
       z-index: 9990;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .tick-major,
     .tick-minor {
       position: absolute;
-      background: #666;
+      background: var(--text-secondary);
       width: 2px;
+      transition: all 0.2s ease;
     }
 
     .tick-major {
-      height: 12px;
-      top: -4px;
+      height: 16px;
+      top: -5px;
+      background: var(--primary);
+      width: 3px;
+      border-radius: 2px;
     }
 
     .tick-major span {
       position: absolute;
-      top: 12px;
+      top: 18px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 12px;
-      color: #333;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      white-space: nowrap;
     }
 
     .tick-minor {
-      height: 8px;
+      height: 10px;
       top: -2px;
+      opacity: 0.5;
     }
 
     .dot {
       position: absolute;
       top: 50%;
-      width: 12px;
-      height: 12px;
-      background: #4b0082;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       cursor: pointer;
       z-index: 9991;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4), 0 0 0 3px rgba(255, 255, 255, 1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dot:hover {
+      transform: translate(-50%, -50%) scale(1.2);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.6), 0 0 0 4px rgba(255, 255, 255, 1);
     }
 
     .dot .tooltip {
       position: absolute;
-      bottom: calc(100% + 8px);
+      bottom: calc(100% + 12px);
       left: 50%;
       transform: translateX(-50%);
-
       z-index: 9999;
       visibility: hidden;
       opacity: 0;
-      transition: opacity .2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
-
       max-width: min(92vw, 720px);
     }
 
     .dot:hover .tooltip {
       visibility: visible;
       opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
     }
 
     .dot .tooltip img {
       width: 100%;
       height: auto;
-      border: 2px solid #fff;
-      border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+      border: 3px solid #fff;
+      border-radius: 12px;
+      box-shadow: var(--shadow-xl);
+      transition: all 0.3s ease;
     }
 
     @media (max-width: 480px) {
@@ -268,58 +411,82 @@
 
 
     .conclusions {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
-      background: #ffffff;
-      padding: 2em;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background: var(--bg-card);
+      padding: 3em;
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
     }
 
     .conclusions h2 {
-      font-size: 1.8em;
-      font-weight: bold;
-      color: #222;
-      margin-bottom: 0.5em;
+      font-family: 'Playfair Display', serif;
+      font-size: 2.25em;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1em;
+      position: relative;
+      padding-bottom: 0.5em;
+    }
+
+    .conclusions h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 2px;
     }
 
     .conclusions ul {
-      font-size: 1.1em;
-      line-height: 1.8;
+      font-size: 1.05em;
+      line-height: 1.9;
       padding-left: 1.5em;
     }
 
     .conclusions p {
-      font-size: 1.1em;
-      line-height: 1.8;
-      margin-top: 1em;
+      font-size: 1.05em;
+      line-height: 1.9;
+      margin-top: 1.25em;
     }
 
     .conclusions img {
       max-width: 100%;
       height: auto;
       display: block;
-      margin: 1em 0;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease-in-out;
+      margin: 1.5em 0;
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: zoom-in;
+      border: 1px solid var(--border-color);
     }
 
     .conclusions img:hover {
-      transform: scale(1.03);
+      transform: scale(1.02) translateY(-4px);
+      box-shadow: var(--shadow-xl);
     }
 
     .story-row {
       display: flex;
       align-items: center;
-      gap: 2em;
-      margin: 2em 0;
+      gap: 3em;
+      margin: 3em 0;
       flex-wrap: wrap;
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.25em;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 2.5em;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .story-row:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
     }
 
     .story-row.reverse {
@@ -335,8 +502,15 @@
       width: 100%;
       height: auto;
       display: block;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      box-shadow: var(--shadow-md);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid var(--border-color);
+    }
+
+    .story-media img:hover {
+      transform: scale(1.02);
+      box-shadow: var(--shadow-lg);
     }
 
     .story-copy {
@@ -346,32 +520,62 @@
 
     .story-eyebrow {
       display: inline-block;
-      font-size: .85em;
-      letter-spacing: .03em;
+      font-size: 0.75em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #4b0082;
-      background: #e9e3ff;
-      padding: .25em .6em;
+      color: var(--primary);
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+      padding: 0.5em 1em;
       border-radius: 999px;
-      margin-bottom: .5em;
+      margin-bottom: 1em;
+      font-weight: 600;
+      border: 1px solid rgba(99, 102, 241, 0.2);
     }
 
     .story-copy h3 {
-      margin: .25em 0 .4em;
-      font-size: 1.4em;
-      color: #222;
+      font-family: 'Playfair Display', serif;
+      margin: 0.5em 0 0.75em;
+      font-size: 1.75em;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
     }
 
     .story-copy p {
       margin: 0;
       font-size: 1.05em;
-      line-height: 1.7;
+      line-height: 1.8;
+      color: var(--text-secondary);
     }
 
     /* --- GLOBAL MOBILE PADDING --- */
     @media (max-width: 600px) {
       body {
         padding: 1rem;
+      }
+
+      .title-page {
+        padding: 2em 1.5em;
+        margin-bottom: 2em;
+      }
+
+      .intro,
+      .discussion {
+        padding: 2em 1.5em;
+      }
+
+      .intro h2,
+      .discussion h2 {
+        font-size: 1.75em;
+      }
+
+      .story-row {
+        padding: 1.5em;
+        gap: 2em;
+      }
+
+      .downloads {
+        padding: 2em 1.5em;
       }
     }
 
@@ -390,8 +594,8 @@
     .two-col {
       display: flex;
       align-items: flex-start;
-      gap: 20px;
-      margin-bottom: 2em;
+      gap: 2.5em;
+      margin-bottom: 3em;
       flex-wrap: nowrap;
     }
 
@@ -405,8 +609,9 @@
     .two-col p {
       flex: 1 1 360px;
       margin: 0;
-      font-size: 1.1em;
-      line-height: 1.8;
+      font-size: 1.05em;
+      line-height: 1.9;
+      color: var(--text-primary);
     }
 
     /* Stack on phones */
@@ -447,9 +652,28 @@
     .sources a,
     .sources li {
       overflow-wrap: anywhere;
-      /* modern */
       word-break: break-word;
-      /* fallback */
+    }
+
+    .sources a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid transparent;
+    }
+
+    .sources a:hover {
+      color: var(--primary-dark);
+      border-bottom-color: var(--primary);
+    }
+
+    .sources ol li {
+      margin-bottom: 0.75em;
+    }
+
+    .sources ol li::marker {
+      color: var(--primary);
+      font-weight: 600;
     }
 
     /* Safety net so nothing causes horizontal scroll */
@@ -461,6 +685,17 @@
 
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 4px;
     }
   </style>
 
@@ -476,7 +711,7 @@
 
   <div class="intro">
     <h2>Introduction</h2>
-    <img src="images/blueberrygraphic.png" alt="graphic" style="max-width: 75%; min-width: 300px;" />
+    <img src="images/blueberrygraphic.png" alt="graphic" style="max-width: 75%; min-width: 300px; border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); margin: 2em auto; display: block; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);" />
     <ul>
       <li>
         Blueberry is a bio-sensing computer that is attached to an eyeglass, which collects biological signals to track
@@ -519,22 +754,30 @@
       }
 
       #reading-chart-block {
-        margin: 1.5rem 0;
-        padding: 1rem 1rem 0.5rem;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin: 2rem 0;
+        padding: 2rem 2rem 1rem;
+        background: var(--bg-card);
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
         position: relative;
         isolation: isolate;
         z-index: 0;
         clear: both;
+        transition: all 0.3s ease;
+      }
+
+      #reading-chart-block:hover {
+        box-shadow: var(--shadow-xl);
       }
 
       #reading-chart-block .chart-title {
-        margin: 0 0 0.75rem;
-        font-size: 1.25rem;
-        line-height: 1.2;
-        color: #222;
+        margin: 0 0 1.25rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--text-primary);
+        font-family: 'Playfair Display', serif;
       }
 
       #reading-chart-stack {
@@ -854,6 +1097,11 @@
         width: 100%;
         height: 300px;
         margin-bottom: 2em;
+        background: var(--bg-card);
+        padding: 1.5em;
+        border-radius: 16px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
       }
     </style>
 
@@ -1022,22 +1270,30 @@
       }
 
       #pattern-chart-block {
-        margin: 1.5rem 0;
-        padding: 1rem 1rem 0.5rem;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin: 2rem 0;
+        padding: 2rem 2rem 1rem;
+        background: var(--bg-card);
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
         position: relative;
         isolation: isolate;
         z-index: 0;
         clear: both;
+        transition: all 0.3s ease;
+      }
+
+      #pattern-chart-block:hover {
+        box-shadow: var(--shadow-xl);
       }
 
       #pattern-chart-block .chart-title {
-        margin: 0 0 0.75rem;
-        font-size: 1.25rem;
-        line-height: 1.2;
-        color: #222;
+        margin: 0 0 1.25rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--text-primary);
+        font-family: 'Playfair Display', serif;
       }
 
       #pattern-chart-stack {
@@ -1388,11 +1644,11 @@
       <canvas id="fnirsChartF"></canvas>
     </div>
 
-    <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 2em; flex-wrap: wrap;">
-      <div class="chart-container" style="flex:1; min-width:300px;">
+    <div class="two-col">
+      <div class="chart-container">
         <canvas id="readingBars"></canvas>
       </div>
-      <p style="flex: 1; font-size: 1.1em; line-height: 1.8;">
+      <p>
         This bar chart shows the highest and lowest peaks of brain activity during the reading and note-taking session.
         The left side of the chart represents when the person first started taking notes, which makes sense since they
         just finished reading a page that didn't require much understanding. The right side of the chart, on the other
@@ -1400,15 +1656,15 @@
       </p>
     </div>
 
-    <p style="margin-bottom: 2em;">
+    <p style="margin-bottom: 2em; color: var(--text-secondary);">
       Similarly, when analyzing the pattern game session, a different set of cognitive patterns emerges.
     </p>
 
-    <div style="display: flex; align-items: flex-start; gap: 20px; margin-bottom: 2em; flex-wrap: wrap;">
-      <div class="chart-container" style="flex:1; min-width:300px;">
+    <div class="two-col">
+      <div class="chart-container">
         <canvas id="patternBars"></canvas>
       </div>
-      <p style="flex: 1;">
+      <p>
         Like the bar chart at the top, this chart also shows the lowest and highest points of brain activity during the
         pattern game session. The left side of the bar chart shows where the person first started the pattern game and
         had to identify the shape added to each block. The right side of the bar chart represents the question where the
@@ -1466,7 +1722,7 @@
     <p>
 
     </p>
-    <p style="font-style: italic; font-family: 'Georgia', serif; font-size: 1.1em;">
+    <p style="font-style: italic; font-family: 'Inter', sans-serif; font-size: 1em; color: var(--text-secondary); background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); padding: 1.5em; border-radius: 12px; border-left: 4px solid var(--primary); margin-top: 2em;">
       Note: We used ChatGPT to provide the rough structure of the code and also the conversion of the units
       (milliseconds to minutes with intervals in between). We also used it to generate some of the images.
     </p>
@@ -1474,9 +1730,12 @@
 
 
   <div class="sources"
-    style="max-width: 900px; margin: 0 auto; background: #ffffff; padding: 2em; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-    <h2 style="font-size: 1.8em; font-weight: bold; color: #222; margin-bottom: 0.5em;">Sources</h2>
-    <ol style="font-size: 1.1em; line-height: 1.8; padding-left: 1.5em;">
+    style="max-width: 1000px; margin: 0 auto; background: var(--bg-card); padding: 3em; border-radius: 20px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
+    <h2 style="font-family: 'Playfair Display', serif; font-size: 2.25em; font-weight: 700; color: var(--text-primary); margin-bottom: 1em; position: relative; padding-bottom: 0.5em;">
+      Sources
+      <span style="content: ''; position: absolute; bottom: 0; left: 0; width: 60px; height: 4px; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 2px; display: block;"></span>
+    </h2>
+    <ol style="font-size: 1.05em; line-height: 1.9; padding-left: 1.5em; color: var(--text-primary);">
       <li><a href="https://www.sciencedirect.com/topics/engineering/biosensing"
           target="_blank">https://www.sciencedirect.com/topics/engineering/biosensing/</a></li>
       <li><a href="https://blueberryx.com/" target="_blank">https://blueberryx.com/</a></li>
