@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Analysis Using Blueberry</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
     
     * {
       box-sizing: border-box;
@@ -14,103 +14,180 @@
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #e8f0f8 50%, #f0f4f8 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f1f3f5 100%);
       padding: 0;
-      color: #1d1d1f;
-      line-height: 1.6;
+      color: #212529;
+      line-height: 1.75;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      letter-spacing: -0.01em;
     }
 
     .title-page {
       text-align: center;
-      margin-bottom: 2rem;
-      padding: 6rem 2rem 4rem;
-      background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(54, 162, 235, 0.12), 0 1px 3px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(54, 162, 235, 0.15);
+      margin-bottom: 4rem;
+      padding: 8rem 3rem 6rem;
+      background: linear-gradient(135deg, #ffffff 0%, #fafbfc 30%, #f8f9fa 70%, #ffffff 100%);
+      border-radius: 36px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .title-page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 4px;
+      background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.08) 50%, transparent 100%);
+      border-radius: 0 0 4px 4px;
+    }
+
+    .title-page::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.06) 50%, transparent 100%);
     }
 
     h1 {
-      font-size: clamp(1.75rem, 3.5vw, 3rem);
-      font-weight: 700;
-      color: #1a2d4a;
+      font-size: clamp(2.25rem, 4.5vw, 4rem);
+      font-weight: 800;
+      color: #0f172a;
       margin: 0;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.04em;
       line-height: 1.1;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+      position: relative;
+      padding-bottom: 1.5rem;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.1) 50%, transparent 100%);
+      border-radius: 2px;
     }
 
     .subtitle {
-      font-size: 1.25rem;
-      margin-top: 1rem;
-      color: #5a7fa8;
-      font-weight: 400;
+      font-size: 1.5rem;
+      margin-top: 2rem;
+      color: #64748b;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      position: relative;
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      background: rgba(248, 250, 252, 0.6);
+      border-radius: 50px;
+      border: 1px solid rgba(0, 0, 0, 0.03);
     }
 
     .intro,
     .discussion {
-      max-width: 980px;
-      margin: 0 auto 2rem;
-      background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-      padding: 4.5rem 5rem;
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(54, 162, 235, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-      border: 1px solid rgba(54, 162, 235, 0.12);
-      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      max-width: 1100px;
+      margin: 0 auto 3rem;
+      background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+      padding: 5rem 6rem;
+      border-radius: 28px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
     }
 
     .intro:hover,
     .discussion:hover {
-      box-shadow: 0 8px 30px rgba(54, 162, 235, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-      border-color: rgba(54, 162, 235, 0.2);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.06);
+      transform: translateY(-3px);
+      border-color: rgba(0, 0, 0, 0.06);
     }
 
     .intro h2,
     .discussion h2 {
-      font-size: clamp(2rem, 3vw, 2.5rem);
-      font-weight: 600;
-      color: #1d1d1f;
-      margin-bottom: 1.5rem;
-      letter-spacing: -0.01em;
+      font-size: clamp(2.25rem, 3.5vw, 3rem);
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 2rem;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      position: relative;
+      padding-bottom: 1rem;
+    }
+
+    .intro h2::after,
+    .discussion h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.04) 100%);
+      border-radius: 2px;
     }
 
     ul {
       font-size: 1.125rem;
-      line-height: 1.8;
-      padding-left: 1.5em;
-      color: #1d1d1f;
+      line-height: 2;
+      padding-left: 1.75em;
+      color: #334155;
+      margin: 1.5rem 0;
+    }
+
+    ul li {
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+
+    ul li::marker {
+      color: #2563eb;
+      font-weight: 600;
     }
 
     .discussion img {
       max-width: 100%;
       height: auto;
-      margin: 2rem 0;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin: 2.5rem 0;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
       transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease;
       cursor: zoom-in;
+      border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
     .discussion img:hover {
-      transform: scale(1.01) translateY(-2px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      transform: scale(1.02) translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .discussion p {
-      margin-top: 1.5rem;
+      margin-top: 1.75rem;
       font-size: 1.125rem;
-      line-height: 1.8;
-      color: #1d1d1f;
+      line-height: 1.9;
+      color: #334155;
+      text-align: justify;
     }
 
     .discussion ul {
-      margin-top: 1.5rem;
+      margin-top: 1.75rem;
       font-size: 1.125rem;
-      line-height: 1.8;
-      color: #1d1d1f;
+      line-height: 2;
+      color: #334155;
     }
 
     .discussion div {
@@ -143,28 +220,42 @@
     }
 
     .downloads {
-      max-width: 980px;
-      margin: 0 auto 2rem;
-      background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-      padding: 4rem 5rem;
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(54, 162, 235, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-      border: 1px solid rgba(54, 162, 235, 0.12);
-      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      max-width: 1100px;
+      margin: 0 auto 3rem;
+      background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+      padding: 5rem 6rem;
+      border-radius: 28px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
     }
 
     .downloads:hover {
-      box-shadow: 0 8px 30px rgba(54, 162, 235, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-      border-color: rgba(54, 162, 235, 0.2);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.06);
+      transform: translateY(-3px);
+      border-color: rgba(0, 0, 0, 0.06);
     }
 
     .downloads h2 {
-      color: #1d1d1f;
-      margin-bottom: 1.5rem;
-      font-size: clamp(1.75rem, 2.5vw, 2.25rem);
-      font-weight: 600;
-      letter-spacing: -0.01em;
+      color: #0f172a;
+      margin-bottom: 2rem;
+      font-size: clamp(2rem, 3vw, 2.75rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      position: relative;
+      padding-bottom: 1rem;
+    }
+
+    .downloads h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.04) 100%);
+      border-radius: 2px;
     }
 
     .downloads ul {
@@ -178,21 +269,22 @@
 
     .downloads a {
       text-decoration: none;
-      background: linear-gradient(135deg, #0071e3 0%, #0051d5 100%);
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: #fff;
-      padding: 0.875rem 2rem;
-      border-radius: 12px;
+      padding: 1rem 2.5rem;
+      border-radius: 14px;
       transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       display: inline-block;
-      font-weight: 500;
-      font-size: 1rem;
-      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+      font-weight: 600;
+      font-size: 1.0625rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3), 0 2px 4px rgba(37, 99, 235, 0.2);
+      letter-spacing: 0.01em;
     }
 
     .downloads a:hover {
-      background: linear-gradient(135deg, #0077ed 0%, #0058e8 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.4);
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4), 0 4px 8px rgba(37, 99, 235, 0.3);
     }
 
     .tooltip-image {
@@ -232,58 +324,62 @@
     .timeline {
       position: relative;
       width: 100%;
-      height: 3px;
-      background: #d2d2d7;
-      border-radius: 2px;
-      margin: 2rem 0;
+      height: 4px;
+      background: linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%);
+      border-radius: 4px;
+      margin: 3rem 0;
       overflow: visible;
       z-index: 9990;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .tick-major,
     .tick-minor {
       position: absolute;
-      background: #86868b;
-      width: 1.5px;
+      background: #64748b;
+      width: 2px;
     }
 
     .tick-major {
-      height: 14px;
-      top: -5.5px;
+      height: 16px;
+      top: -6px;
+      background: #475569;
     }
 
     .tick-major span {
       position: absolute;
-      top: 16px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 0.75rem;
-      color: #86868b;
-      font-weight: 500;
+      font-size: 0.8125rem;
+      color: #475569;
+      font-weight: 600;
+      letter-spacing: 0.01em;
     }
 
     .tick-minor {
-      height: 8px;
-      top: -2.5px;
+      height: 10px;
+      top: -3px;
     }
 
     .dot {
       position: absolute;
       top: 50%;
-      width: 16px;
-      height: 16px;
-      background: #0071e3;
+      width: 18px;
+      height: 18px;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       border-radius: 50%;
       transform: translate(-50%, -50%);
       cursor: pointer;
       z-index: 9991;
-      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4), 0 0 0 3px rgba(255, 255, 255, 0.9);
       transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border: 2px solid #ffffff;
     }
 
     .dot:hover {
-      transform: translate(-50%, -50%) scale(1.2);
-      box-shadow: 0 4px 12px rgba(0, 113, 227, 0.4);
+      transform: translate(-50%, -50%) scale(1.3);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.9);
     }
 
     .dot .tooltip {
@@ -310,9 +406,9 @@
     .dot .tooltip img {
       width: 100%;
       height: auto;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     @media (max-width: 480px) {
@@ -324,78 +420,95 @@
 
 
     .conclusions {
-      max-width: 980px;
-      margin: 0 auto 2rem;
-      background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-      padding: 4.5rem 5rem;
-      border-radius: 24px;
-      box-shadow: 0 4px 20px rgba(54, 162, 235, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-      border: 1px solid rgba(54, 162, 235, 0.12);
-      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      max-width: 1100px;
+      margin: 0 auto 3rem;
+      background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+      padding: 5rem 6rem;
+      border-radius: 28px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
     }
 
     .conclusions:hover {
-      box-shadow: 0 8px 30px rgba(54, 162, 235, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-      border-color: rgba(54, 162, 235, 0.2);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.06);
+      transform: translateY(-3px);
+      border-color: rgba(0, 0, 0, 0.06);
     }
 
     .conclusions h2 {
-      font-size: clamp(2rem, 3vw, 2.5rem);
-      font-weight: 600;
-      color: #1d1d1f;
-      margin-bottom: 1.5rem;
-      letter-spacing: -0.01em;
+      font-size: clamp(2.25rem, 3.5vw, 3rem);
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 2rem;
+      letter-spacing: -0.02em;
+      position: relative;
+      padding-bottom: 1rem;
+    }
+
+    .conclusions h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.04) 100%);
+      border-radius: 2px;
     }
 
     .conclusions ul {
       font-size: 1.125rem;
-      line-height: 1.8;
-      padding-left: 1.5em;
-      color: #1d1d1f;
+      line-height: 2;
+      padding-left: 1.75em;
+      color: #334155;
     }
 
     .conclusions p {
       font-size: 1.125rem;
-      line-height: 1.8;
-      margin-top: 1.5rem;
-      color: #1d1d1f;
+      line-height: 1.9;
+      margin-top: 1.75rem;
+      color: #334155;
+      text-align: justify;
     }
 
     .conclusions img {
       max-width: 100%;
       height: auto;
       display: block;
-      margin: 2rem 0;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      margin: 2.5rem 0;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
       transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease;
       cursor: zoom-in;
+      border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
     .conclusions img:hover {
-      transform: scale(1.01) translateY(-2px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      transform: scale(1.02) translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .story-row {
       display: flex;
       align-items: center;
-      gap: 2.5rem;
-      margin: 2rem 0;
+      gap: 3rem;
+      margin: 2.5rem 0;
       flex-wrap: wrap;
-      background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-      border-radius: 24px;
-      padding: 2.5rem;
-      box-shadow: 0 4px 20px rgba(54, 162, 235, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-      border: 1px solid rgba(54, 162, 235, 0.12);
-      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+      border-radius: 28px;
+      padding: 3.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
     }
 
     .story-row:hover {
-      box-shadow: 0 8px 30px rgba(54, 162, 235, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
-      transform: translateY(-2px);
-      border-color: rgba(54, 162, 235, 0.2);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.06);
+      transform: translateY(-3px);
+      border-color: rgba(0, 0, 0, 0.06);
     }
 
     .story-row.reverse {
@@ -413,13 +526,14 @@
       max-width: 100%;
       height: auto;
       display: block;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
       transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
     .story-row:hover .story-media img {
-      transform: scale(1.02);
+      transform: scale(1.03);
     }
 
     .story-copy {
@@ -429,31 +543,31 @@
 
     .story-eyebrow {
       display: inline-block;
-      font-size: 0.875rem;
-      letter-spacing: 0.05em;
+      font-size: 0.8125rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #0071e3;
-      background: rgba(0, 113, 227, 0.1);
-      padding: 0.5rem 1rem;
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.12);
+      padding: 0.625rem 1.25rem;
       border-radius: 999px;
-      margin-bottom: 1rem;
-      font-weight: 500;
+      margin-bottom: 1.25rem;
+      font-weight: 600;
     }
 
     .story-copy h3 {
-      margin: 0.5rem 0 1rem;
-      font-size: clamp(1.5rem, 2vw, 2rem);
-      color: #1d1d1f;
-      font-weight: 600;
-      letter-spacing: -0.01em;
+      margin: 0.75rem 0 1.25rem;
+      font-size: clamp(1.75rem, 2.5vw, 2.25rem);
+      color: #0f172a;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       line-height: 1.2;
     }
 
     .story-copy p {
       margin: 0;
       font-size: 1.125rem;
-      line-height: 1.8;
-      color: #1d1d1f;
+      line-height: 1.9;
+      color: #334155;
     }
 
     /* --- GLOBAL MOBILE PADDING --- */
@@ -463,23 +577,53 @@
       }
 
       .title-page {
-        padding: 4rem 1.5rem 3rem;
-        margin-bottom: 1.5rem;
-        border-radius: 20px;
+        padding: 5rem 2rem 4rem;
+        margin-bottom: 2rem;
+        border-radius: 24px;
+      }
+
+      .title-page::before {
+        width: 80px;
+        height: 3px;
+      }
+
+      .title-page::after {
+        width: 150px;
+      }
+
+      h1 {
+        padding-bottom: 1rem;
+      }
+
+      h1::after {
+        width: 60px;
+        height: 2px;
+      }
+
+      .subtitle {
+        font-size: 1.25rem;
+        padding: 0.625rem 1.5rem;
+        margin-top: 1.5rem;
       }
 
       .intro,
       .discussion,
       .conclusions {
-        padding: 3rem 2rem;
-        margin: 0 auto 1.5rem;
-        border-radius: 20px;
+        padding: 3.5rem 2.5rem;
+        margin: 0 auto 2rem;
+        border-radius: 24px;
       }
 
       .downloads {
-        padding: 3rem 2rem;
-        margin: 0 auto 1.5rem;
-        border-radius: 20px;
+        padding: 3.5rem 2.5rem;
+        margin: 0 auto 2rem;
+        border-radius: 24px;
+      }
+
+      .sources {
+        padding: 3.5rem 2.5rem !important;
+        margin: 0 auto 2rem !important;
+        border-radius: 24px !important;
       }
 
       .story-row {
@@ -581,9 +725,14 @@
 
     /* Note styling */
     p[style*="font-style: italic"] {
-      color: #86868b !important;
-      font-size: 1rem !important;
-      margin-top: 2rem !important;
+      color: #64748b !important;
+      font-size: 1.0625rem !important;
+      margin-top: 2.5rem !important;
+      font-style: italic !important;
+      padding: 1.5rem;
+      background: rgba(241, 245, 249, 0.5);
+      border-left: 3px solid #cbd5e1;
+      border-radius: 8px;
     }
 
     /* Link styling */
@@ -591,28 +740,37 @@
     .intro a,
     .discussion a,
     .conclusions a {
-      color: #0071e3;
+      color: #2563eb;
       text-decoration: none;
-      transition: color 0.2s ease;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid transparent;
+      font-weight: 500;
     }
 
     .sources a:hover,
     .intro a:hover,
     .discussion a:hover,
     .conclusions a:hover {
-      color: #0077ed;
-      text-decoration: underline;
+      color: #1d4ed8;
+      border-bottom-color: #1d4ed8;
     }
 
     /* Add container wrapper for main content */
     .main-content {
-      padding: 2rem 2rem;
+      padding: 3rem 2.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
     }
 
     @media (max-width: 768px) {
       .main-content {
-        padding: 1.5rem 1rem;
+        padding: 2rem 1.5rem;
       }
+    }
+
+    /* Enhanced sources section */
+    .sources {
+      position: relative;
     }
   </style>
 
@@ -672,32 +830,32 @@
       }
 
       #reading-chart-block {
-        margin: 2rem 0;
-        padding: 2.5rem;
-        background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-        border-radius: 24px;
-        box-shadow: 0 4px 20px rgba(54, 162, 235, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(54, 162, 235, 0.12);
+        margin: 2.5rem 0;
+        padding: 3.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        border-radius: 28px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.04);
         position: relative;
         isolation: isolate;
         z-index: 0;
         clear: both;
-        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       }
 
       #reading-chart-block:hover {
-        box-shadow: 0 8px 30px rgba(54, 162, 235, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
-        border-color: rgba(54, 162, 235, 0.2);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.06);
+        transform: translateY(-3px);
+        border-color: rgba(0, 0, 0, 0.06);
       }
 
       #reading-chart-block .chart-title {
-        margin: 0 0 1.5rem;
-        font-size: clamp(1.25rem, 2vw, 1.5rem);
+        margin: 0 0 2rem;
+        font-size: clamp(1.5rem, 2.5vw, 1.875rem);
         line-height: 1.3;
-        color: #1d1d1f;
-        font-weight: 600;
-        letter-spacing: -0.01em;
+        color: #0f172a;
+        font-weight: 700;
+        letter-spacing: -0.02em;
       }
 
       #reading-chart-stack {
@@ -1016,12 +1174,19 @@
         position: relative;
         width: 100%;
         height: 300px;
-        margin-bottom: 2rem;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-        padding: 1.5rem;
-        box-shadow: 0 2px 12px rgba(54, 162, 235, 0.1);
-        border: 1px solid rgba(54, 162, 235, 0.12);
+        margin-bottom: 2.5rem;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        transition: all 0.3s ease;
+      }
+
+      .chart-container:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+        transform: translateY(-2px);
+        border-color: rgba(0, 0, 0, 0.06);
       }
     </style>
 
@@ -1190,32 +1355,32 @@
       }
 
       #pattern-chart-block {
-        margin: 2rem 0;
-        padding: 2.5rem;
-        background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-        border-radius: 24px;
-        box-shadow: 0 4px 20px rgba(54, 162, 235, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(54, 162, 235, 0.12);
+        margin: 2.5rem 0;
+        padding: 3.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        border-radius: 28px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.04);
         position: relative;
         isolation: isolate;
         z-index: 0;
         clear: both;
-        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       }
 
       #pattern-chart-block:hover {
-        box-shadow: 0 8px 30px rgba(54, 162, 235, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
-        border-color: rgba(54, 162, 235, 0.2);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.06);
+        transform: translateY(-3px);
+        border-color: rgba(0, 0, 0, 0.06);
       }
 
       #pattern-chart-block .chart-title {
-        margin: 0 0 1.5rem;
-        font-size: clamp(1.25rem, 2vw, 1.5rem);
+        margin: 0 0 2rem;
+        font-size: clamp(1.5rem, 2.5vw, 1.875rem);
         line-height: 1.3;
-        color: #1d1d1f;
-        font-weight: 600;
-        letter-spacing: -0.01em;
+        color: #0f172a;
+        font-weight: 700;
+        letter-spacing: -0.02em;
       }
 
       #pattern-chart-stack {
@@ -1652,9 +1817,21 @@
 
 
   <div class="sources"
-    style="max-width: 980px; margin: 0 auto 2rem; background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%); padding: 4.5rem 5rem; border-radius: 24px; box-shadow: 0 4px 20px rgba(54, 162, 235, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); border: 1px solid rgba(54, 162, 235, 0.12); transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);">
-    <h2 style="font-size: clamp(2rem, 3vw, 2.5rem); font-weight: 600; color: #1d1d1f; margin-bottom: 1.5rem; letter-spacing: -0.01em;">Sources</h2>
-    <ol style="font-size: 1.125rem; line-height: 1.8; padding-left: 1.5em; color: #1d1d1f;">
+    style="max-width: 1100px; margin: 0 auto 3rem; background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%); padding: 5rem 6rem; border-radius: 28px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 0, 0, 0.04); transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);">
+    <h2 style="font-size: clamp(2.25rem, 3.5vw, 3rem); font-weight: 700; color: #0f172a; margin-bottom: 2rem; letter-spacing: -0.02em; position: relative; padding-bottom: 1rem;">Sources</h2>
+    <style>
+      .sources h2::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.04) 100%);
+        border-radius: 2px;
+      }
+    </style>
+    <ol style="font-size: 1.125rem; line-height: 2; padding-left: 1.75em; color: #334155;">
       <li><a href="https://www.sciencedirect.com/topics/engineering/biosensing"
           target="_blank">https://www.sciencedirect.com/topics/engineering/biosensing/</a></li>
       <li><a href="https://blueberryx.com/" target="_blank">https://blueberryx.com/</a></li>
